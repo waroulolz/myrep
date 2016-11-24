@@ -1,6 +1,5 @@
 library(shiny)
 
-# Define UI for application that plots random distributions 
 shinyUI(pageWithSidebar(
   
   # Application title
@@ -20,7 +19,7 @@ shinyUI(pageWithSidebar(
   ),
   
   
-  # Show a plot of the generated distribution
+  # Shows the plot generated
   mainPanel(
     plotOutput("distPlot")
   )
