@@ -3,19 +3,30 @@ library(shiny)
 shinyUI(pageWithSidebar(
   
   # Application title
-  headerPanel("CAC 40 Stock market"),
+  headerPanel("Stock market"),
   
-  # Sidebar with a slider input for id of market
   sidebarPanel(
     sliderInput("nb", 
                 "Which market :", 
                 min = 1, max = 40, value = 1),
     
-    selectInput("model", "Choose a model:", 
-                choices = c("SVM", "Linear Model")),
+    sliderInput("cost", 
+                "Parameter Cost : (2^X)", 
+                min = -3, max = 7, value = 0),
     
-    checkboxInput("applyModel", "Show model", FALSE)
-    
+    sliderInput("gamma",
+                "Parameter Gamma : (2^X)", 
+                min = -3, max = 7, value = 0),
+
+    checkboxInput("applySVM", "Show SVM", FALSE),
+
+    checkboxInput("applyLinearModel", "Show Linear Model", FALSE),
+
+    actionButton("addModel", "Add Model"),
+    actionButton("resetModels", "Reset"),
+
+    htmlOutput("modelList")
+
   ),
   
   
