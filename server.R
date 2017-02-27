@@ -168,7 +168,7 @@ shinyServer(function(input, output, session) {
       if (input$applyNaiveModel){
         predictedY <- naiveForecast()
         p <- p %>% add_trace(x = getTestDf()$date, y = predictedY, 
-                             mode = 'lines', name = 'Linear model')
+                             mode = 'lines', name = 'Naive model')
       }
     }
     else{
@@ -181,11 +181,14 @@ shinyServer(function(input, output, session) {
   output$predTable <- renderTable(rownames = TRUE, bordered = TRUE, {
     svmPredictedY <- svmForecast()
     naivePredictedY <- naiveForecast()
-    data.frame(RMSE = c(RMSE(svmPredictedY, getTestDf()$target), RMSE(naivePredictedY, getTestDf()$target)),
-               MAE = c(MAE(svmPredictedY, getTestDf()$target), MAE(naivePredictedY, getTestDf()$target)),
-               MAPE = c(MAPE(svmPredictedY, getTestDf()$target), MAPE(naivePredictedY, getTestDf()$target)),
-               MASE = c(MASE(svmPredictedY, getTestDf()$target), MASE(naivePredictedY, getTestDf()$target)),
-               NMSE = c(NMSE(svmPredictedY, getTestDf()$target), NMSE(naivePredictedY, getTestDf()$target)),
+    data.frame(MSE   = c(  MSE(getTestDf()$target, svmPredictedY),   MSE(getTestDf()$target, naivePredictedY)),
+               RMSE  = c( RMSE(getTestDf()$target, svmPredictedY),  RMSE(getTestDf()$target, naivePredictedY)),
+               MAE   = c(  MAE(getTestDf()$target, svmPredictedY),   MAE(getTestDf()$target, naivePredictedY)),
+               MAPE  = c( MAPE(getTestDf()$target, svmPredictedY),  MAPE(getTestDf()$target, naivePredictedY)),
+               sMAPE = c(sMAPE(getTestDf()$target, svmPredictedY), sMAPE(getTestDf()$target, naivePredictedY)),
+               MASE  = c( MASE(getTestDf()$target, svmPredictedY),  MASE(getTestDf()$target, naivePredictedY)),
+               NMSE  = c( NMSE(getTestDf()$target, svmPredictedY),  NMSE(getTestDf()$target, naivePredictedY)),
+               NNMSE = c(NNMSE(getTestDf()$target, svmPredictedY, naivePredictedY), 1.0),
                row.names = c("SVM Errors", "Naive Errors"))
   })
 
@@ -228,6 +231,8 @@ shinyServer(function(input, output, session) {
   }
 
   naiveForecast <- function(){
-    rep(mean(tail(getTrainDf()$target, 30)), nrow(getTestDf()))
+    # Moving average forecast - Average of the last data according to a certain embedding e
+    e <- 30
+    rep(mean(tail(getTrainDf()$target, e)), nrow(getTestDf()))
   }
 })

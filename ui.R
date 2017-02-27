@@ -19,11 +19,11 @@ shinyUI(
 
             sliderInput("days",
                        "Cut data set : ",
-                       min = 1, max = 1000, value = c(1, 365)),
+                       min = 2, max = 1000, value = c(1, 365)),
 
             sliderInput("trainingset",
                        "Cut training set : ",
-                       min = 1, max = 1000, value = 30)
+                       min = 2, max = 1000, value = 30)
           ),
 
           mainPanel(
@@ -48,7 +48,11 @@ shinyUI(
 
             sliderInput("rwindow",
                         "Rolling window size :",
-                        min = 30, max = 365, value = 50),
+                        min = 1, max = 50, value = 30),
+
+            sliderInput("horizon",
+                        "Horizon :",
+                        min = 1, max = 50, value = 1),
 
             radioButtons("strategy","Forecasting strategy",
                          c("Recursive" = "recursive", "Direct" = "direct"), inline = TRUE),
@@ -66,6 +70,7 @@ shinyUI(
           mainPanel(
             h4(""),
             plotlyOutput("predPlot"),
+            h4("Prediction errors table"),
             tableOutput("predTable"),
             plotlyOutput("predErrorPlot")
           )
