@@ -21,7 +21,7 @@ shinyUI(
                        "Cut data set : ",
                        min = 2, max = 1000, value = c(1, 365)),
 
-            sliderInput("trainingset",
+            sliderInput("trainingcut",
                        "Cut training set : ",
                        min = 2, max = 1000, value = 30)
           ),
@@ -40,11 +40,11 @@ shinyUI(
           sidebarPanel(
             sliderInput("cost",
                         "Parameter Cost : (2^X)",
-                        min = -3, max = 7, value = 0),
+                        min = -5, max = 5, value = 0),
 
             sliderInput("gamma",
                         "Parameter Gamma : (2^X)",
-                        min = -3, max = 7, value = 0),
+                        min = -5, max = 5, value = 0),
 
             sliderInput("rwindow",
                         "Rolling window size :",

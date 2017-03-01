@@ -49,7 +49,8 @@ getString <- function(costs, gammas, MASES){
 shinyServer(function(input, output, session) {
 
   window <- reactive({input$rwindow})
-  trainingset <- reactive({input$trainingset})
+  horizon <- reactive({input$horizon})
+  trainingcut <- reactive({input$trainingcut})
   cost <- reactive({2^input$cost})
   gamma <- reactive({2^input$gamma})
   days <- reactive({input$days})
@@ -85,11 +86,11 @@ shinyServer(function(input, output, session) {
   }
 
   getTestDf <- reactive({
-    tail(getDf(), trainingset())
+    tail(getDf(), trainingcut())
   })
 
   getTrainDf <- reactive({
-    head(getDf(), -trainingset())
+    head(getDf(), -trainingcut())
   })
 
   getSVM <- function(cost, gamma){
@@ -160,7 +161,7 @@ shinyServer(function(input, output, session) {
       }
 
       if (input$applySVM){
-        predictedY <- svmForecast()
+        predictedY <- svmForecast(getDf(), trainingcut(), window())
         p <- p %>% add_trace(x = getTestDf()$date, y = predictedY, 
                              mode = 'lines', name = 'SVM forecast')
       } 
@@ -179,7 +180,7 @@ shinyServer(function(input, output, session) {
   })
 
   output$predTable <- renderTable(rownames = TRUE, bordered = TRUE, {
-    svmPredictedY <- svmForecast()
+    svmPredictedY <- svmForecast(getDf(), trainingcut(), window())
     naivePredictedY <- naiveForecast()
     data.frame(MSE   = c(  MSE(getTestDf()$target, svmPredictedY),   MSE(getTestDf()$target, naivePredictedY)),
                RMSE  = c( RMSE(getTestDf()$target, svmPredictedY),  RMSE(getTestDf()$target, naivePredictedY)),
@@ -193,38 +194,73 @@ shinyServer(function(input, output, session) {
   })
 
   output$predErrorPlot <- renderPlotly({
-    predictedY <- svmForecast()
-    plot_ly(y = getTestDf()$target - predictedY, x = getTestDf()$date, type = 'scatter', mode = 'lines', name = 'Error')%>% 
+    df <- getDf()
+    predictedY <- c()
+    minimumTrainingSize <- 2 * (window() + horizon())
+    for (i in seq(minimumTrainingSize, nrow(df), horizon())){
+      horizon <- min(horizon(), nrow(df) - i)
+      if (horizon > 0){
+        predictedY <- c(predictedY, svmForecast(head(df, i), horizon, window()))
+      }
+    }
+    dd <- tail(df, - minimumTrainingSize)
+    plot_ly(y = dd$target - predictedY, x = dd$date, type = 'scatter', mode = 'lines', name = 'Error')%>% 
       layout(title = "SVM forecast error", showlegend = TRUE)
   })
 
-  svmForecast <- function(){
-
-    datestoPredict <- getTestDf()["date"]
-
+  svmForecast <- function(df, horizon, window){
+    trainDf <- head(df, -horizon)
+    testDf <- tail(df, horizon)
+    datestoPredict <- testDf["date"]
+    
     if (input$strategy == "direct"){
+      embedf <- cbind(tail(df$date, - window), as.data.frame(embed(df$target, window + 1)))
+      names(embedf) <- c("date", paste("t_", c(0:(window)), sep=''))
+      
+      traindd <- head(embedf, - horizon)
+      
+      models <- vector("list", horizon)
+      
+      for (k in 1:horizon){
+        dd <- head(traindd, -(horizon - k))
+        if (horizon - k == 0){
+          dd <- traindd
+        }
+        dd$t_0 <- tail(trainDf$target, - (horizon + window - k))
+        
+        models[[k]] <- svm(t_0 ~ ., data = dd)
+      }
+      
       predictedY <- c()
       for(i in seq_along(1:nrow(datestoPredict))){
-        rolling_window <- head(tail(getTrainDf(), nrow(datestoPredict) + window() - i), window())
-        model <- svm(target ~ date, gamma = gamma(), cost = cost(), data = rolling_window)
+        rolling_window <- subset(traindd[(nrow(traindd) - horizon + i),], select = -c(t_0))
 
-        datetoPredict <- data.frame(date = datestoPredict[i,])
-        pred <- predict(model, datetoPredict)
+        pred <- predict(models[[i]], rolling_window)
         predictedY <- c(predictedY, pred)
       }
     }
 
     else if (input$strategy == "recursive"){
-      rolling_window <- tail(getTrainDf(), window())[, c("date", "target")]
+      embedf <- cbind(tail(df$date, - (window)), as.data.frame(embed(df$target, window + 1)))
+      names(embedf) <- c("date", paste("t_", c(0:(window)), sep=''))
+    
+      traindd <- head(embedf, - horizon)
+
+      model <- svm(t_0 ~ ., data = traindd)
+
+      rolling_window <- merge(as.data.frame(embed(tail(trainDf, window)$target, window)), 
+                                 data.frame(date = ""))
+      names(rolling_window) <- c(paste("t_", c(1:(window)), sep=''), "date")
+
       predictedY <- c()
       for(i in seq_along(1:nrow(datestoPredict))){
-
-        model <- svm(target ~ date, gamma = gamma(), cost = cost(), data = rolling_window)
-        datetoPredict <- data.frame(date = datestoPredict[i,])
-        pred <- predict(model, datetoPredict)
+        rolling_window$date <- datestoPredict[i, ]
+        
+        pred <- predict(model, rolling_window)
         predictedY <- c(predictedY, pred)
 
-        rolling_window <- rbind(rolling_window[-1,], data.frame(date = datetoPredict, target = pred))
+        rolling_window[, 1:(window - 1)] <- rolling_window[, 2:window]
+        rolling_window[, window] <- pred
       }
     }
     predictedY
