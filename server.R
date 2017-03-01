@@ -195,17 +195,17 @@ shinyServer(function(input, output, session) {
 
   output$predErrorPlot <- renderPlotly({
     df <- getDf()
-    predictedY <- c()
-    minimumTrainingSize <- 2 * (window() + horizon())
+    MSEs <- c()
+    minimumTrainingSize <- 2 * window() + horizon()
     for (i in seq(minimumTrainingSize, nrow(df), horizon())){
       horizon <- min(horizon(), nrow(df) - i)
       if (horizon > 0){
-        predictedY <- c(predictedY, svmForecast(head(df, i), horizon, window()))
+        predictedY <- svmForecast(head(df, i), horizon, window())
+        MSEs <- c(MSEs, MSE(df[(i-horizon+1):i, ]$target, predictedY))
       }
     }
-    dd <- tail(df, - minimumTrainingSize)
-    plot_ly(y = dd$target - predictedY, x = dd$date, type = 'scatter', mode = 'lines', name = 'Error')%>% 
-      layout(title = "SVM forecast error", showlegend = TRUE)
+    plot_ly(y = MSEs, type = 'scatter', mode = 'lines', name = 'Error')%>%
+      layout(title = "Evolution of MSE", showlegend = TRUE)
   })
 
   svmForecast <- function(df, horizon, window){
@@ -243,7 +243,7 @@ shinyServer(function(input, output, session) {
     else if (input$strategy == "recursive"){
       embedf <- cbind(tail(df$date, - (window)), as.data.frame(embed(df$target, window + 1)))
       names(embedf) <- c("date", paste("t_", c(0:(window)), sep=''))
-    
+
       traindd <- head(embedf, - horizon)
 
       model <- svm(t_0 ~ ., data = traindd)
