@@ -1,29 +1,25 @@
+#Clear environment
+rm(list=ls())
 library(shiny)
 library(plotly)
 library(e1071)
+library("quantmod")
 library(caret)
 library("RColorBrewer")
+library(gbcode)
+source("C:/Users/GG/Desktop/Memoire/myrep/KNNFunctions.R")
+source("C:/Users/GG/Desktop/Memoire/myrep/SVM.R")
+source("C:/Users/GG/Desktop/Memoire/myrep/config.R")
 source("C:/Users/GG/Desktop/Memoire/myrep/ErrorMeasures.R")
 
-#Data extraction
-df <- read.csv('histoCAC40_2Y.CSV')
-df$date <- as.Date(df$date)
-df <- df[order(as.Date(df$date, format="%y/%m/%d")),]
-df$target <- df$lastPrice
 
-volume <- read.csv(paste(dataDirectory, 'cac40_dataset_volume.CSV', sep=""), sep = "")
-sigma_4 <- read.csv(paste(dataDirectory, 'cac40_6y_dataset_sigma_4.csv', sep=""), sep = "")
-rv_50 <- read.csv(paste(dataDirectory, 'cac40_dataset_rv_50.csv', sep=""), sep = "")
-ccreturn <- read.csv(paste(dataDirectory, 'cac40_dataset_ccreturn.csv', sep=""), sep = "")
-volume$date <- as.Date(volume$Index)
-sigma_4$date <- as.Date(sigma_4$Index)
-rv_50$date <- as.Date(rv_50$Index)
-ccreturn$date <- as.Date(ccreturn$Index)
-names(volume) <- gsub("X", "", names(volume))
-names(sigma_4) <- gsub("X", "", names(sigma_4))
-names(rv_50) <- gsub("X", "", names(rv_50))
-names(ccreturn) <- gsub("X", "", names(ccreturn))
-
+extractDf <- function(data){
+  data <- data.frame(Date = index(data), data = coredata(data))
+  data[ncol(data)] <- NULL
+  names(data) <- c("date", "openingPrice", "highPrice", "lowPrice", "lastPrice", "volume")
+  data$rendement <- c(0,log(1.0*data$lastPrice[2:nrow(data)] / data$lastPrice[1:nrow(data)-1]))
+  data
+}
 
 getColors <- function(nb){
   colors <- colorRampPalette(brewer.pal(8,"Dark2"))(max(5, nb))
@@ -47,7 +43,17 @@ getString <- function(costs, gammas, MASES){
 
 
 shinyServer(function(input, output, session) {
-
+  
+  #Data extraction
+  downloadData <- function(dataName){
+    data <- getSymbols(dataName, src="yahoo", to = Sys.Date(), auto.assign = FALSE) 
+    data <- extractDf(data)
+    data
+  }
+  getData <- reactive({invalidateLater(1000 *  60 * 60, session) # Refresh data each hour
+                      downloadData(markets[[input$market]])})
+  
+  #Parameters getters
   window <- reactive({input$rwindow})
   horizon <- reactive({input$horizon})
   trainingcut <- reactive({input$trainingcut})
@@ -57,12 +63,12 @@ shinyServer(function(input, output, session) {
 
   # Send dataset choices to the ui
   updateSelectInput(session, "market",
-                    choices = names(volume)[-c(1, length(volume))],
-                    selected = head(names(volume)[-c(1)], 1)
+                    choices = names(markets),
+                    selected = names(markets)[[1]]
   )
   updateSelectInput(session, "dataset",
-                    choices = c("volume", "sigma_4", "rv_50", "ccreturn"),
-                    selected = "volume"
+                    choices = c("openingPrice", "highPrice", "lowPrice", "lastPrice", "volume"),
+                    selected = "lastPrice"
   )
 
   # Generate a summary of the data
@@ -70,19 +76,24 @@ shinyServer(function(input, output, session) {
     summary(getDf()$target)
   })
 
-  # Gets data with the chosen id
+  # Gets the correct dataframe according to user's parameters
   getDf <- function(){
-    if (input$dataset == "volume"){
-        df <- volume[c("date", input$market)]
-    } else if (input$dataset == "sigma_4"){
-        df <- sigma_4[c("date", input$market)]
-    } else if (input$dataset == "rv_50"){
-        df <- rv_50[c("date", input$market)]
-    } else if (input$dataset == "ccreturn"){
-        df <- ccreturn[c("date", input$market)]
+    df <- getData()
+
+    if (input$dataset == "lastPrice"){
+      df <- df[c("date", "lastPrice")]
+    } else if (input$dataset == "volume"){
+      df <- df[c("date", "volume")]
+    } else if (input$dataset == "lowPrice"){
+      df <- df[c("date", "lowPrice")]
+    } else if (input$dataset == "highPrice"){
+      df <- df[c("date", "highPrice")]
+    } else if (input$dataset == "openingPrice"){
+      df <- df[c("date", "openingPrice")]
     }
+
     names(df) <- c("date", "target")
-    head(tail(df, input$days[2]), input$days[2] - input$days[1])
+    df[(df$date > days()[1]) & (df$date < days()[2]),]
   }
 
   getTestDf <- reactive({
@@ -138,7 +149,7 @@ shinyServer(function(input, output, session) {
   })
 
   output$predPlot <- renderPlotly({
-    
+
     if (input$market != ""){
       df <- getDf()
 
@@ -161,13 +172,25 @@ shinyServer(function(input, output, session) {
       }
 
       if (input$applySVM){
-        predictedY <- svmForecast(getDf(), trainingcut(), window())
+        predictedY <- svmForecast(getDf(), trainingcut(), window(), gamma(), cost(), input$strategy)
         p <- p %>% add_trace(x = getTestDf()$date, y = predictedY, 
-                             mode = 'lines', name = 'SVM forecast')
+                             mode = 'lines', name = paste('SVM (G=', gamma(), ', C=', cost(), ')', sep = ''))
       } 
 
+      # Add default semi-optimized svm
+      predictedY <- svmForecast(getDf(), trainingcut(), window(), strategy = input$strategy)
+      p <- p %>% add_trace(x = getTestDf()$date, y = predictedY, 
+                           mode = 'lines', name = paste('SVM default (G=', round(1/window(), 3), ', C=', 1, ')', sep = ''))
+      
+      if (input$applyKnnModel){
+        predictedY <- modelSelectionKNN(zoo(getDf()[, 2],  order.by = getDf()$date), trainingcut(), round(2*nrow(getDf())/3),
+                                        window(), type = "direct", error_measure = MASE)$forecasts
+        p <- p %>% add_trace(x = getTestDf()$date, y = predictedY, 
+                             mode = 'lines', name = "KNN model")
+      }
+    
       if (input$applyNaiveModel){
-        predictedY <- naiveForecast()
+        predictedY <- naiveForecast(trainingcut())
         p <- p %>% add_trace(x = getTestDf()$date, y = predictedY, 
                              mode = 'lines', name = 'Naive model')
       }
@@ -180,95 +203,82 @@ shinyServer(function(input, output, session) {
   })
 
   output$predTable <- renderTable(rownames = TRUE, bordered = TRUE, {
-    svmPredictedY <- svmForecast(getDf(), trainingcut(), window())
-    naivePredictedY <- naiveForecast()
-    data.frame(MSE   = c(  MSE(getTestDf()$target, svmPredictedY),   MSE(getTestDf()$target, naivePredictedY)),
-               RMSE  = c( RMSE(getTestDf()$target, svmPredictedY),  RMSE(getTestDf()$target, naivePredictedY)),
-               MAE   = c(  MAE(getTestDf()$target, svmPredictedY),   MAE(getTestDf()$target, naivePredictedY)),
-               MAPE  = c( MAPE(getTestDf()$target, svmPredictedY),  MAPE(getTestDf()$target, naivePredictedY)),
-               sMAPE = c(sMAPE(getTestDf()$target, svmPredictedY), sMAPE(getTestDf()$target, naivePredictedY)),
-               MASE  = c( MASE(getTestDf()$target, svmPredictedY),  MASE(getTestDf()$target, naivePredictedY)),
-               NMSE  = c( NMSE(getTestDf()$target, svmPredictedY),  NMSE(getTestDf()$target, naivePredictedY)),
-               NNMSE = c(NNMSE(getTestDf()$target, svmPredictedY, naivePredictedY), 1.0),
-               row.names = c("SVM Errors", "Naive Errors"))
+    svmPredY <- svmForecast(getDf(), trainingcut(), window(), gamma(), cost(), input$strategy)
+    defaultSvmPredY <- svmForecast(getDf(), trainingcut(), window(), strategy = input$strategy)
+    knnPredY <- modelSelectionKNN(zoo(getDf()[, 2],  order.by = getDf()$date), trainingcut(), round(2*nrow(getDf())/3),
+                                    window(), type = "direct", error_measure = MASE)$forecasts
+    naivePredY <- naiveForecast(trainingcut())
+    data.frame(MSE   = c(  MSE(getTestDf()$target, svmPredY),   MSE(getTestDf()$target, defaultSvmPredY),   MSE(getTestDf()$target, knnPredY),   MSE(getTestDf()$target, naivePredY)),
+               RMSE  = c( RMSE(getTestDf()$target, svmPredY),  RMSE(getTestDf()$target, defaultSvmPredY),  RMSE(getTestDf()$target, knnPredY),  RMSE(getTestDf()$target, naivePredY)),
+               MAE   = c(  MAE(getTestDf()$target, svmPredY),   MAE(getTestDf()$target, defaultSvmPredY),   MAE(getTestDf()$target, knnPredY),   MAE(getTestDf()$target, naivePredY)),
+               MAPE  = c( MAPE(getTestDf()$target, svmPredY),  MAPE(getTestDf()$target, defaultSvmPredY),  MAPE(getTestDf()$target, knnPredY),  MAPE(getTestDf()$target, naivePredY)),
+               sMAPE = c(sMAPE(getTestDf()$target, svmPredY), sMAPE(getTestDf()$target, defaultSvmPredY), sMAPE(getTestDf()$target, knnPredY), sMAPE(getTestDf()$target, naivePredY)),
+               MASE  = c( MASE(getTestDf()$target, svmPredY),  MASE(getTestDf()$target, defaultSvmPredY),  MASE(getTestDf()$target, knnPredY),  MASE(getTestDf()$target, naivePredY)),
+               NMSE  = c( NMSE(getTestDf()$target, svmPredY),  NMSE(getTestDf()$target, defaultSvmPredY),  NMSE(getTestDf()$target, knnPredY),  NMSE(getTestDf()$target, naivePredY)),
+               NNMSE = c(NNMSE(getTestDf()$target, svmPredY, naivePredY), NNMSE(getTestDf()$target, defaultSvmPredY, naivePredY), NNMSE(getTestDf()$target, knnPredY, naivePredY), 1.0),
+               row.names = c("SVM Errors", "SVM Default Errors", "KNN Errors", "Naive Errors"))
   })
 
-  output$predErrorPlot <- renderPlotly({
+  
+  output$errorTable <- renderTable(rownames = TRUE, bordered = TRUE, {
+    
     df <- getDf()
-    MSEs <- c()
-    minimumTrainingSize <- 2 * window() + horizon()
-    for (i in seq(minimumTrainingSize, nrow(df), horizon())){
+    MSEs   <- c()
+    RMSEs  <- c()
+    MAEs   <- c()
+    MAPEs  <- c()
+    sMAPEs <- c()
+    MASEs  <- c()
+    NMSEs  <- c()
+    NNMSEs <- c()
+    
+    minimumTrainingSize <- round(2*nrow(df)/3)
+    for (i in seq(minimumTrainingSize, nrow(df) - horizon(), horizon())){
       horizon <- min(horizon(), nrow(df) - i)
       if (horizon > 0){
-        predictedY <- svmForecast(head(df, i), horizon, window())
-        MSEs <- c(MSEs, MSE(df[(i-horizon+1):i, ]$target, predictedY))
+        svmPredY <- svmForecast(head(df, i), horizon, window(), gamma(), cost(), input$strategy)
+        defaultSvmPredY <- svmForecast(head(df, i), horizon, window(), strategy = input$strategy)
+        knnPredY <- modelSelectionKNN(zoo(head(df, i)[, 2],  order.by = getDf()$date), horizon, round(2*nrow(getDf())/3),
+                                      window(), type = "direct", error_measure = MASE)$forecasts
+        naivePredY <- naiveForecast(horizon)
+        
+        MSEs <- c(MSEs,      MSE(df[(i-horizon+1):i, ]$target, svmPredY),   MSE(df[(i-horizon+1):i, ]$target, defaultSvmPredY),
+                             MSE(df[(i-horizon+1):i, ]$target, knnPredY),   MSE(df[(i-horizon+1):i, ]$target, naivePredY))
+        RMSEs <- c(RMSEs,   RMSE(df[(i-horizon+1):i, ]$target, svmPredY),  RMSE(df[(i-horizon+1):i, ]$target, defaultSvmPredY),
+                            RMSE(df[(i-horizon+1):i, ]$target, knnPredY),  RMSE(df[(i-horizon+1):i, ]$target, naivePredY))
+        MAEs <- c(MAEs,      MAE(df[(i-horizon+1):i, ]$target, svmPredY),   MAE(df[(i-horizon+1):i, ]$target, defaultSvmPredY),
+                             MAE(df[(i-horizon+1):i, ]$target, knnPredY),   MAE(df[(i-horizon+1):i, ]$target, naivePredY))
+        MAPEs <- c(MAPEs,   MAPE(df[(i-horizon+1):i, ]$target, svmPredY),  MAPE(df[(i-horizon+1):i, ]$target, defaultSvmPredY),
+                            MAPE(df[(i-horizon+1):i, ]$target, knnPredY),  MAPE(df[(i-horizon+1):i, ]$target, naivePredY))
+        sMAPEs <- c(sMAPEs,sMAPE(df[(i-horizon+1):i, ]$target, svmPredY), sMAPE(df[(i-horizon+1):i, ]$target, defaultSvmPredY),
+                           sMAPE(df[(i-horizon+1):i, ]$target, knnPredY), sMAPE(df[(i-horizon+1):i, ]$target, naivePredY))
+        MASEs <- c(MASEs,   MASE(df[(i-horizon+1):i, ]$target, svmPredY),  MASE(df[(i-horizon+1):i, ]$target, defaultSvmPredY),
+                            MASE(df[(i-horizon+1):i, ]$target, knnPredY),  MASE(df[(i-horizon+1):i, ]$target, naivePredY))
+        NMSEs <- c(NMSEs,   NMSE(df[(i-horizon+1):i, ]$target, svmPredY),  NMSE(df[(i-horizon+1):i, ]$target, defaultSvmPredY),
+                            NMSE(df[(i-horizon+1):i, ]$target, knnPredY),  NMSE(df[(i-horizon+1):i, ]$target, naivePredY))
+        NNMSEs <- c(NNMSEs,NNMSE(df[(i-horizon+1):i, ]$target, svmPredY, naivePredY),
+                           NNMSE(df[(i-horizon+1):i, ]$target, defaultSvmPredY, naivePredY),
+                           NNMSE(df[(i-horizon+1):i, ]$target, knnPredY, naivePredY),
+                           1.0)
+
       }
     }
-    plot_ly(y = MSEs, type = 'scatter', mode = 'lines', name = 'Error')%>%
-      layout(title = "Evolution of MSE", showlegend = TRUE)
+
+    data.frame(MSE   = apply(matrix(  MSEs, ncol = 4, byrow = TRUE), 2, mean),
+               RMSE  = apply(matrix( RMSEs, ncol = 4, byrow = TRUE), 2, mean),
+               MAE   = apply(matrix(  MAEs, ncol = 4, byrow = TRUE), 2, mean),
+               MAPE  = apply(matrix( MAPEs, ncol = 4, byrow = TRUE), 2, mean),
+               sMAPE = apply(matrix(sMAPEs, ncol = 4, byrow = TRUE), 2, mean),
+               MASE  = apply(matrix( MASEs, ncol = 4, byrow = TRUE), 2, mean),
+               NMSE  = apply(matrix( NMSEs, ncol = 4, byrow = TRUE), 2, mean),
+               NNMSE = apply(matrix(NNMSEs, ncol = 4, byrow = TRUE), 2, mean),
+               row.names = c("SVM Errors", "SVM Default Errors", "KNN Errors", "Naive Errors"))
   })
+  
 
-  svmForecast <- function(df, horizon, window){
-    trainDf <- head(df, -horizon)
-    testDf <- tail(df, horizon)
-    datestoPredict <- testDf["date"]
-    
-    if (input$strategy == "direct"){
-      embedf <- cbind(tail(df$date, - window), as.data.frame(embed(df$target, window + 1)))
-      names(embedf) <- c("date", paste("t_", c(0:(window)), sep=''))
-      
-      traindd <- head(embedf, - horizon)
-      
-      models <- vector("list", horizon)
-      
-      for (k in 1:horizon){
-        dd <- head(traindd, -(horizon - k))
-        if (horizon - k == 0){
-          dd <- traindd
-        }
-        dd$t_0 <- tail(trainDf$target, - (horizon + window - k))
-        
-        models[[k]] <- svm(t_0 ~ ., data = dd)
-      }
-      
-      predictedY <- c()
-      for(i in seq_along(1:nrow(datestoPredict))){
-        rolling_window <- subset(traindd[(nrow(traindd) - horizon + i),], select = -c(t_0))
-
-        pred <- predict(models[[i]], rolling_window)
-        predictedY <- c(predictedY, pred)
-      }
-    }
-
-    else if (input$strategy == "recursive"){
-      embedf <- cbind(tail(df$date, - (window)), as.data.frame(embed(df$target, window + 1)))
-      names(embedf) <- c("date", paste("t_", c(0:(window)), sep=''))
-
-      traindd <- head(embedf, - horizon)
-
-      model <- svm(t_0 ~ ., data = traindd)
-
-      rolling_window <- merge(as.data.frame(embed(tail(trainDf, window)$target, window)), 
-                                 data.frame(date = ""))
-      names(rolling_window) <- c(paste("t_", c(1:(window)), sep=''), "date")
-
-      predictedY <- c()
-      for(i in seq_along(1:nrow(datestoPredict))){
-        rolling_window$date <- datestoPredict[i, ]
-        
-        pred <- predict(model, rolling_window)
-        predictedY <- c(predictedY, pred)
-
-        rolling_window[, 1:(window - 1)] <- rolling_window[, 2:window]
-        rolling_window[, window] <- pred
-      }
-    }
-    predictedY
-  }
-
-  naiveForecast <- function(){
+  naiveForecast <- function(horizon){
     # Moving average forecast - Average of the last data according to a certain embedding e
     e <- 30
-    rep(mean(tail(getTrainDf()$target, e)), nrow(getTestDf()))
+    rep(mean(tail(getTrainDf()$target, e)), horizon)
   }
 })

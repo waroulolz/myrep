@@ -12,18 +12,19 @@ shinyUI(
       # Shows the plot generated
       tabPanel("Data inspection",
         sidebarLayout(
-          sidebarPanel(
-            selectInput('market', 'Which market :', c()),
+          sidebarPanel(width = 3,
+            selectInput('market', 'Which market :', c("CAC 40")),
 
             selectInput('dataset', 'Which dataset :', c()),
 
-            sliderInput("days",
-                       "Cut data set : ",
-                       min = 2, max = 1000, value = c(1, 365)),
+            dateRangeInput("days",
+                           "Date range:",
+                           start = Sys.Date() - 365*2,
+                           end = Sys.Date()),
 
             sliderInput("trainingcut",
-                       "Cut training set : ",
-                       min = 2, max = 1000, value = 30)
+                       "Days to forecast : ",
+                       min = 2, max = 100, value = 14)
           ),
 
           mainPanel(
@@ -37,27 +38,25 @@ shinyUI(
 
       tabPanel("SVM forecasting",
         sidebarLayout(
-          sidebarPanel(
+          sidebarPanel(width = 3,
             sliderInput("cost",
-                        "Parameter Cost : (2^X)",
-                        min = -5, max = 5, value = 0),
+                        "Parameter Cost :",
+                        min = -6, max = 5, value = 0, pre = "2^", ticks = FALSE),
 
             sliderInput("gamma",
-                        "Parameter Gamma : (2^X)",
-                        min = -5, max = 5, value = 0),
+                        "Parameter Gamma :",
+                        min = -6, max = 5, value = 0, pre = "2^", ticks = FALSE),
 
             sliderInput("rwindow",
                         "Rolling window size :",
-                        min = 1, max = 50, value = 30),
+                        min = 2, max = 50, value = 21),
 
-            sliderInput("horizon",
-                        "Horizon :",
-                        min = 1, max = 50, value = 1),
-
-            radioButtons("strategy","Forecasting strategy",
+            radioButtons("strategy", "Forecasting strategy",
                          c("Recursive" = "recursive", "Direct" = "direct"), inline = TRUE),
 
             checkboxInput("applySVM", "Show SVM", TRUE),
+
+            checkboxInput("applyKnnModel", "Show KNN Model", TRUE),
 
             checkboxInput("applyNaiveModel", "Show Naive Model", FALSE),
 
@@ -71,8 +70,22 @@ shinyUI(
             h4(""),
             plotlyOutput("predPlot"),
             h4("Prediction errors table"),
-            tableOutput("predTable"),
-            plotlyOutput("predErrorPlot")
+            tableOutput("predTable")
+          )
+        )
+      ),
+      
+      tabPanel("Forecasting Error",
+        sidebarLayout(
+          sidebarPanel(width = 3,
+            sliderInput("horizon",
+                        "Horizon :",
+                        min = 1, max = 50, value = 21)
+         ),
+         mainPanel(
+           h4(""),
+           h4("Rolling window errors table"),
+           tableOutput("errorTable")
           )
         )
       )
