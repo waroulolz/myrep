@@ -17,14 +17,13 @@ shinyUI(
 
             selectInput('dataset', 'Which dataset :', c()),
 
+            radioButtons("preProcess", "Data transformation :",
+                         c("Raw Data" = "raw", "Compound Return" = "creturn", "Volatility" = "volatility")),
+            
             dateRangeInput("days",
                            "Date range:",
                            start = Sys.Date() - 365*2,
-                           end = Sys.Date()),
-
-            sliderInput("trainingcut",
-                       "Days to forecast : ",
-                       min = 2, max = 100, value = 14)
+                           end = Sys.Date())
           ),
 
           mainPanel(
@@ -36,55 +35,68 @@ shinyUI(
         )
       ),
 
-      tabPanel("SVM forecasting",
+      tabPanel(" Multi-step ahead forecasting",
         sidebarLayout(
           sidebarPanel(width = 3,
             sliderInput("cost",
                         "Parameter Cost :",
-                        min = -6, max = 5, value = 0, pre = "2^", ticks = FALSE),
+                        min = -7, max = 6, value = 0, pre = "2^", ticks = FALSE),
 
             sliderInput("gamma",
                         "Parameter Gamma :",
-                        min = -6, max = 5, value = 0, pre = "2^", ticks = FALSE),
+                        min = -7, max = 6, value = -6, pre = "2^", ticks = FALSE),
 
             sliderInput("rwindow",
-                        "Rolling window size :",
+                        "Order of the model :",
                         min = 2, max = 50, value = 21),
 
-            radioButtons("strategy", "Forecasting strategy",
+            sliderInput("trainingcut",
+                        "Horizon : ",
+                        min = 2, max = 100, value = 14),
+
+            radioButtons("strategy", "Forecasting strategy :",
                          c("Recursive" = "recursive", "Direct" = "direct"), inline = TRUE),
 
             checkboxInput("applySVM", "Show SVM", TRUE),
 
             checkboxInput("applyKnnModel", "Show KNN Model", TRUE),
 
-            checkboxInput("applyNaiveModel", "Show Naive Model", FALSE),
-
-            actionButton("addModel", "Add Model"),
-            actionButton("resetModels", "Reset"),
-
-            htmlOutput("modelList")
+            checkboxInput("applyNaiveModel", "Show Naive Model", FALSE)
           ),
 
           mainPanel(
             h4(""),
             plotlyOutput("predPlot"),
-            h4("Prediction errors table"),
             tableOutput("predTable")
           )
         )
       ),
       
-      tabPanel("Forecasting Error",
+      tabPanel("Average error",
         sidebarLayout(
           sidebarPanel(width = 3,
+            sliderInput("costErr",
+                       "Parameter Cost :",
+                       min = -7, max = 6, value = 0, pre = "2^", ticks = FALSE),
+
+            sliderInput("gammaErr",
+                       "Parameter Gamma :",
+                       min = -7, max = 6, value = -6, pre = "2^", ticks = FALSE),
+
+            sliderInput("rwindowErr",
+                       "Order of the model :",
+                       min = 2, max = 50, value = 21),
+
             sliderInput("horizon",
                         "Horizon :",
-                        min = 1, max = 50, value = 21)
+                        min = 2, max = 50, value = 14),
+
+            radioButtons("strategyErr", "Forecasting strategy :",
+                        c("Recursive" = "recursive", "Direct" = "direct"), inline = TRUE)
          ),
          mainPanel(
            h4(""),
-           h4("Rolling window errors table"),
+           h4("Means of errors with rolling window"),
            tableOutput("errorTable")
           )
         )
