@@ -4,9 +4,8 @@ library(shiny)
 library(plotly)
 library(e1071)
 library("quantmod")
-library(caret)
 library(gbcode)
-source("C:/Users/GG/Desktop/Memoire/myrep/KNNFunctions.R")
+source("C:/Users/GG/Desktop/Memoire/myrep/KNN.R")
 source("C:/Users/GG/Desktop/Memoire/myrep/SVM.R")
 source("C:/Users/GG/Desktop/Memoire/myrep/config.R")
 source("C:/Users/GG/Desktop/Memoire/myrep/ErrorMeasures.R")
@@ -16,15 +15,16 @@ extractDf <- function(data){
   data <- data.frame(Date = index(data), data = coredata(data))
   data[ncol(data)] <- NULL
   names(data) <- c("date", "openingPrice", "highPrice", "lowPrice", "lastPrice", "volume")
-  data$rendement <- c(0,log(1.0*data$lastPrice[2:nrow(data)] / data$lastPrice[1:nrow(data)-1]))
   data
 }
+
 
 creturn <- function(data){
   cr <- c(0,log(1.0*data[2:length(data)] / data[1:length(data)-1]))
   cr[(is.infinite(cr)) | is.na(cr)] <- 0
   cr
 }
+
 
 volatility <- function(df){
   u <- log(df$highPrice/df$openingPrice)
@@ -75,10 +75,11 @@ shinyServer(function(input, output, session) {
     summary(getDf()$target)
   })
 
-  # Gets the correct dataframe according to user's parameters
+  # Gets the correct dataframe according to user's selection parameters
   getDf <- function(){
     df <- getData()
 
+    # Compute pre-processings and select a column as a forecast target
     if (preProcess() == "volatility"){
       df <- volatility(df)[c("date", "target")]
     } 
@@ -100,6 +101,7 @@ shinyServer(function(input, output, session) {
         df$target <- creturn(df$target)
       }
     }
+    # Cut data according to the selected date range
     df[(df$date > days()[1]) & (df$date < days()[2]),]
   }
 
@@ -124,7 +126,7 @@ shinyServer(function(input, output, session) {
         layout(title = paste("Market : ", input$market, sep = ""))
     }
     else{
-      # Returns a default empty plot while data isn't available
+      # Returns a default empty plot while data isn't available to avoid a blank 'bug'
       plot_ly(data.frame(Date = as.Date(character())), type = 'scatter', mode = 'lines')
     }
   })
@@ -145,7 +147,6 @@ shinyServer(function(input, output, session) {
       # Normalise data, calculate mean and sd only on training set
       meanTarget <- mean(head(df, -trainingcut())$target) 
       sdTarget <- sd(head(df, -trainingcut())$target)
-      
       df$target <- (df$target - meanTarget) / sdTarget
       
       if (input$applySVM){
@@ -177,7 +178,7 @@ shinyServer(function(input, output, session) {
       }
     }
     else{
-      # Returns a default empty plot while data isn't available
+      # Returns a default empty plot while data isn't available to avoid a blank 'bug'
       p <- plot_ly(data.frame(Date=as.Date(character())), type = 'scatter', mode = 'lines')
     }
     p
@@ -188,9 +189,9 @@ shinyServer(function(input, output, session) {
     # Normalise data, calculate mean and sd only on training set
     meanTarget <- mean(head(df, -trainingcut())$target) 
     sdTarget <- sd(head(df, -trainingcut())$target)
-    
     df$target <- (df$target - meanTarget) / sdTarget
     
+    # Get predictions for each model
     svmPredY <- svmForecast(df, trainingcut(), window(), gamma(), cost(), strategy())
     defaultSvmPredY <- svmForecast(df, trainingcut(), window(), strategy = strategy())
     knnPredY <- modelSelectionKNN(df$target, trainingcut(), nrow(df) - trainingcut(),
@@ -203,6 +204,7 @@ shinyServer(function(input, output, session) {
     knnPredY        <- (knnPredY        * sdTarget) + meanTarget
     naivePredY      <- (naivePredY      * sdTarget) + meanTarget
     
+    # Show the means of all errors in table
     data.frame(MSE   = c(  MSE(getTestDf()$target, svmPredY),   MSE(getTestDf()$target, defaultSvmPredY),   MSE(getTestDf()$target, knnPredY),   MSE(getTestDf()$target, naivePredY)),
                RMSE  = c( RMSE(getTestDf()$target, svmPredY),  RMSE(getTestDf()$target, defaultSvmPredY),  RMSE(getTestDf()$target, knnPredY),  RMSE(getTestDf()$target, naivePredY)),
                MAE   = c(  MAE(getTestDf()$target, svmPredY),   MAE(getTestDf()$target, defaultSvmPredY),   MAE(getTestDf()$target, knnPredY),   MAE(getTestDf()$target, naivePredY)),
@@ -227,6 +229,7 @@ shinyServer(function(input, output, session) {
     NMSEs  <- c()
     NNMSEs <- c()
     
+    # This is the loop of the rolling window 
     minimumTrainingSize <- round(2*nrow(df)/3)
     for (i in seq(minimumTrainingSize, nrow(df) - horizon(), horizon())){
       horizon <- min(horizon(), nrow(df) - i)
@@ -234,9 +237,9 @@ shinyServer(function(input, output, session) {
         # Normalise data, calculate mean and sd only on training set
         meanTarget <- mean(head(head(df, i), -horizon)$target) 
         sdTarget <- sd(head(head(df, i), -horizon)$target)
-        
         df$target <- (df$target - meanTarget) / sdTarget
         
+        # Get predictions for each model
         svmPredY <- svmForecast(head(df, i), horizon, windowErr(), gammaErr(), costErr(), strategyErr())
         defaultSvmPredY <- svmForecast(head(df, i), horizon, windowErr(), strategy = strategyErr())
         knnPredY <- modelSelectionKNN(head(df, i)[, 2], horizon, i - horizon,
@@ -272,6 +275,7 @@ shinyServer(function(input, output, session) {
       }
     }
 
+    # Show the means of all errors in table
     data.frame(MSE   = apply(matrix(  MSEs, ncol = 4, byrow = TRUE), 2, mean),
                RMSE  = apply(matrix( RMSEs, ncol = 4, byrow = TRUE), 2, mean),
                MAE   = apply(matrix(  MAEs, ncol = 4, byrow = TRUE), 2, mean),
