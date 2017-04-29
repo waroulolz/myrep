@@ -40,6 +40,7 @@ computeErrors <- function(df, horizon, gamma, cost, window){
 df <- tail(volume, 365)
 df <- df[ , colSums(is.na(df)) == 0]
 
+
 # For a configuration of those parameters, computes a mean error with a rolling origin
 
 window <- 21

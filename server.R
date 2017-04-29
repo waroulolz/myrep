@@ -150,14 +150,14 @@ shinyServer(function(input, output, session) {
       df$target <- (df$target - meanTarget) / sdTarget
       
       if (input$applySVM){
-        predictedY <- svmForecast(df, trainingcut(), window(), gamma(), cost(), input$strategy)
+        predictedY <- svmForecast(df, trainingcut(), window(), gamma(), cost(), strategy())
         predictedY <- (predictedY * sdTarget) + meanTarget
         p <- p %>% add_trace(x = getTestDf()$date, y = predictedY, 
                              mode = 'lines', name = paste('SVM (G=', gamma(), ', C=', cost(), ')', sep = ''))
       } 
 
       # Add default semi-optimized svm
-      predictedY <- svmForecast(df, trainingcut(), window(), strategy = input$strategy)
+      predictedY <- svmForecast(df, trainingcut(), window(), strategy = strategy())
       predictedY <- (predictedY * sdTarget) + meanTarget
       p <- p %>% add_trace(x = getTestDf()$date, y = predictedY, 
                            mode = 'lines', name = paste('SVM default (G=', round(1/window(), 3), ', C=', 1, ')', sep = ''))

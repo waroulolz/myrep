@@ -57,6 +57,10 @@
 \end{center}
 \end{titlepage}
 
+
+\chapter*{Acknowledgements}
+
+
 \tableofcontents
 
 
@@ -72,122 +76,8 @@
 \chapter{Related work}
 
 
-\chapter{Forecasting tool}
 
-As a major contribution for my master's thesis, I developed a web application tool in \textbf{$R$} that offers an easy and fast way to compare different machine learning models, forecasting some financial time-series. The tool runs online and permits anyone to choose a financial time-series, modify it, apply some machine learning models on it and toy with their parameters. The tool is very intuitive to use and the science behind it will be described in the following sections.
-
-The rest of this chapter includes a tutorial on how to use the tool, information on the data sources and the algorithms used in this tool and a section on how to include more models and data sources. 
-
-
-\section{Presentation of the tool}
-
-This section describes how the tool works and what its components are. The web page is divided in three tabs : one for the data selection and visualisation, the second one to try and compare forecasting models and the last tab is for errors analysis. 
-
-Let's have a look at the first tab on figure \ref{fig:tool1} and its components descriptions.
-
-\subsection{Tab : Data inspection}
-
-
-\begin{figure}[!h]
-  \centering
-    \includegraphics[scale=0.44]{img/tab1.png}
-  \caption{View of the first tab of the tool.}
-  \label{fig:tool1}
-\end{figure}
-
-
-\begin{enumerate}
-\item This option allows one to choose a market. The corresponding data will be downloaded from $Yahoo!$ $Finance$. The data is automatically refreshed when needed.
-\item For each market there are different selectable options such as : the opening, closing, high and low prices and the volume.
-\item Rather than using the raw data, a transformation can be selected among the volatility of the data and the compound returns.
-\item The time series can be cut in time as desired.
-\item A plot to visualise the data as chosen by all the parameters.
-\item A summarise of the data.
-\end{enumerate}
-
-
-\subsection{Tab : Multi-step ahead forecasting}
-
-\begin{figure}[!h]
-  \centering
-    \includegraphics[scale=0.44]{img/tab2.png}
-  \caption{View of the second tab of the tool.}
-  \label{fig:tool2}
-\end{figure}
-
-\begin{enumerate}
-\item\inlineitem Those are the configurable parameters of the SVM.
-\item The order of the model, i.e.\ the number of days which are used to predict a value $Y$ at time $t$. E.g.\, if the order of the model is 4, our model tries to predict $Y_t$ according to  $Y_{t-1}, Y_{t-2}, Y_{t-3}, Y_{t-4}$.
-\item The horizon is the number of days we try to predict in multi-step ahead forecasting.
-\item The strategies are defined in detail in section \ref{strat}.
-\item Those are some options to enable or disable the plotting of the models for a clearer visibility.
-\item This is the resulting plot with it's legend. The plot is made with the library \textbf{plotly} that gives a lot of options like zooming, downloading,... The orange dotted line shows the separation between the training set and the test set. Here, we are manually toying with parameters and therefore the line represents the horizon cut, which may be different during model validation.
-\item This is a short table which resumes the errors of the model for the current forecasting. For a more general idea of how a model is usually performing, one should refer to the third and last tab of the web page. 
-\end{enumerate}
-
-
-
-\subsection{Tab : Average error}
-
-\begin{figure}[!h]
-  \centering
-    \includegraphics[scale=0.44]{img/tab3.png}
-  \caption{View of the third tab of the tool.}
-  \label{fig:tool3}
-\end{figure}
-
-
-\begin{enumerate}
-\item\inlineitem\inlineitem\inlineitem\inlineitem\inlineitem Those are the same parameters as those in the second tab.
-\item This is a table of means of errors. Using the selected parameters, each model is applied through the whole data set with a rolling window. The errors are averaged for each window over the whole data set by applying the same model.
-\end{enumerate}
-
-
-
-
-\section{Data sets}
-
-The tool proposes some default data sets such as data from $CAC40$, $S\&P 500$,... These data sets are directly downloaded from $Yahoo!$ $Finance$ and are daily refreshed. The data is publicly available and entirely free.
-
-Each data set is composed of : dates, opening, closing, high and low prices and the volumes of the stock. The tool also ensures to refresh the data automatically when new data is available.
-
-
-
-\section{Libraries}
-
-The tool is written in \textbf{$R$} and it's web client-server part is mostly handled by a library called \textbf{Shiny}.
-
-\textbf{Shiny} is a library that proposes a web application framework that handles everything, including client-server, on itself. It allows one to only care about the functionalities of the code and the library will take care of how things are updated on the client part, how the client interacts with the server, ...
-
-As for the rest, I use \textbf{Plotly} for the nice visual appearance plots and their nice interaction with the user. I use \textbf{e1071} for the SVM's models and \textbf{gbcode} for the K-NNs models. Finally, the \textbf{quantmod} library is used to download the data sets from the Internet.
-
-
-
-\section{Code}
-
-The code of the tool is very loosely coupled, mostly due to the \textbf{Shiny} library. The code is decomposed in one file for each of the client-server parts, one configuration file, one for the errors measurements and one file per machine learning algorithm. 
-
-There is no apparent links between the server and the client because \textbf{Shiny} handles it all. The client part contains a list of widgets to display accompanied by their positioning and a unique tag that refers to a variable from the server that they will be linked to. On the other side, the server contains all the logic of the program and stores its results in variables that the client will access thanks to their tag/variable name.
-
-The configuration file, for its part, contains a list of data sets twinned with their respectively tag reference on $Yahoo!$ $Finance$. 
-
-
-\subsection{Add new data sets}
-
-To add a new data set, one has to find the tag reference of the market on $Yahoo!$ $Finance$ and add it to the configuration file following the same pattern as those already added. That's it.
-
-
-\subsection{Add new models}
-
-To add a new model, one can make a new function that takes in input a dataframe, a horizon and more parameters, and that returns the final predictions. On the client part, nothing has to be changed. Instead, there must be some inclusions of the new model computations on the server part.
-
-The server has then be updated by adding the new model in the following functions : \textit{predPlot}, \textit{predTable}, \textit{errorTable}. They respectively correspond to the plotting function of the second tab, the predictions errors table on the second tab and the averaged errors of the rolling window table on the third tab of the tool. The new model can be included in those functions by following the same structure as the models already present. Nothing else has to be changed.
-
-
-
-
-
-\chapter{Scientific Research}
+\chapter{Methodology}
 
 This chapter is dedicated to the \textit{modus operandi} of machine learning and forecasting. One can have an overall overview of the machine learning procedure on figure \ref{fig:ML}; the main \textit{\textbf{procedures}} are represented on the figure by black rectangles, and the blue ones represent what we have before the corresponding procedures, and what we get after each procedure. We will first have a look at the pre-processing phases. Then we will see the theory behind the models used in the tool. Finally, we will see how to choose a strategy with a model in order to make good predictions and how to quantify their performance.
 
@@ -206,7 +96,7 @@ This chapter is dedicated to the \textit{modus operandi} of machine learning and
 
 One can choose to use the tool to forecast the data as is, or can choose to forecast the continuously compounded returns or the volatility of the data instead.
 
-Log returns are often more interesting for financial time-series because they show an unscaled value comparable with other returns. It is defined as :
+Log returns are often more interesting for financial time series because they show an unscaled value comparable with other returns. It is defined as :
 
 \begin{equation}
 r_{t_i} = \ln\frac{P_{t_i}}{P_{t_{i-1}}}
@@ -224,7 +114,7 @@ d = \ln\frac{P_t^{(l)}}{P_t^{(o)}} \qquad
 c = \ln\frac{P_t^{(c)}}{P_t^{(o)}} \\
 \hat{\sigma}\left ( t \right ) = 0.511\left ( u - d \right )^2 - \left ( 2\ln 2 - 1 \right )c^2
 \end{matrix}
-\end{equation}
+\end{equation}\label{volatility}
 
 where $P_t^{(h)}$, $P_t^{(l)}$ and $P_t^{(c)}$ are respectively the high, low and opening prices at time $t$.
 
@@ -258,7 +148,7 @@ SVM uses linear models to implement nonlinear class boundaries through some nonl
 \begin{figure}[!h]
   \centering
     \includegraphics[scale=0.45]{img/svm.png}
-  \caption{Separation by higher dimensional hyperplanes can be easier.}
+  \caption{Transformation of the input space into a higher dimensional space with a kernel $\phi$ where the non-linearly separable data can be separated linearly by a hyperplane.}
   \label{fig:svm}
 \end{figure}
 
@@ -279,7 +169,7 @@ The transformation of a space into a higher dimensional space is done via a \tex
 
 \subsubsection{Support vector regression theory}
 
-Support vector machines deserves a more in depth analysis as it is the algorithm I studied the most for my thesis. Therefore, this subsection will describe the most important mathematical steps to understand the intrinsic working of SVMs.
+Support vector machines will be detailed more in depth as it is the most novel algorithm and also the most promising. Therefore, this subsection will describe the most important mathematical steps to understand the intrinsic working of SVMs.
 
 Given a training set $\left \{ \left ( x_{1}, y_{1} \right ), \left ( x_{2}, y_{2} \right ), ... \left ( x_{l}, y_{l} \right ) \right \}$ where $y_{i}$ is the output for the vector input $x_{i}$ and $x_{i} \in R^{n} , y_{i} \in R,  \forall i \in \left \{ 1,2, ...,l \right \}$, our goal is to find a function $f\left ( x \right )$ as flat as possible to make predictions different from at most $\varepsilon$ from those $y_{i}$ values for all the training data. This is called $\varepsilon$-SVM regression. $\varepsilon$-SVM makes that small deviations in the input still leave to the same output, making the method more robust. The $\varepsilon$-sensitive loss function that allows errors inside the $\varepsilon$ margin to be considered as zero is then given by :
 
@@ -338,7 +228,7 @@ y_{i} - (\left \langle w, x_{i} \right \rangle + b)\leq \varepsilon + \xi_{i}\\
 \end{equation}
 
 
-$C$ is the constant parameter that represents the trade-off between the complexity of the model (i.e. the flatness of $f\left ( x \right )$, regularisation) and the number of regression errors (i.e. values outside the $\varepsilon$ margin, empirical risk). $C$ is called the regularised constant and takes care of avoiding overfitting. The higher $C$ is, the more we approach a hard-margin function and the less we will have misclassified individuals (overfitting).
+$C$\label{cost} is the constant parameter that represents the trade-off between the complexity of the model (i.e. the flatness of $f\left ( x \right )$, regularisation) and the number of regression errors (i.e. values outside the $\varepsilon$ margin, empirical risk). $C$ is called the regularised constant and takes care of avoiding overfitting. The higher $C$ is, the more we approach a hard-margin function and the less we will have misclassified individuals (overfitting).
 
 
 By introducing Lagrange multipliers $\alpha_i \geq 0$, $\alpha_i^*\geq 0$ for each observation $x_i$, we can transform  $f\left ( x \right )$ and access it's dual form which is easier to solve, but also it will help us for the nonlinear cases \cite{Cortes}\cite{Smola} : 
@@ -370,12 +260,22 @@ For the nonlinear case, we don't search for the flattest function in the input s
 f\left ( x \right ) = \sum_{i=1}^l \left ( \alpha_i - \alpha_i^* \right )K\left ( x_i, x \right ) + b
 \end{equation}
 
-where $K\left ( x_i, x \right )$ is the kernel function. As a final note, one should keep in mind that he can combine multiple kernels in order to better capture the feature's natures, especially if the input is made of different sources.
+where $K\left ( x_i, x \right )$ is the kernel function. The most popular kernel is named the Gaussian radial basis function kernel. The Gaussian RBF makes it the default kernel to use with no prior knowledge on the data and it is defined as : 
+
+\begin{equation}
+K\left ( x_i, x \right ) = \exp \left ( -\gamma \left \| x - x_i \right \|^2 \right )
+\end{equation}
+
+where $\gamma$\label{gamma} is the parameter that defines how much influence a single training example can have. A small gamma means that the influence of $x_i$ is more important (and so large variance, small bias) and vice versa.
+
+As a final note, one should keep in mind that he can combine multiple kernels in order to better capture the feature's natures, especially if the input is made of different sources.
 
 
 \subsection{K-Nearest Neighbors}
 
-KNN is a local nonlinear classification model that can also be used for regression. KNNs are often referred to as one of the simplest of all machine learning algorithms. Its principle is to find in the training set the input that is the most similar because similar input would have similar outputs. Similarity between inputs can be computed with any distance function such as the Euclidean distance ($\sqrt{\sum_i \left (  x_i - y_i \right )^{2}}$). The kNN model output is then given by the mean of the k-nearest neighbors output as follows :
+KNN is a local nonlinear classification model that can also be used for regression. KNNs are often referred to as one of the simplest of all machine learning algorithms. Its principle is to find in the training set the input that is the most similar because similar input would have similar outputs. Note that here the input is a vector of points, and the size of the vector is the order of the model. 
+
+Similarity between inputs can be computed with any distance function such as the Euclidean distance ($\sqrt{\sum_i \left (  x_i - y_i \right )^{2}}$). The kNN model output is then given by the mean of the k-nearest neighbors output as follows :
 
 
 \begin{equation}
@@ -388,9 +288,13 @@ where $kNN(x)$ is the set of the k-nearest neighbors of $x$. There also exists a
 
 \subsection{Naive model}
 
-Naive models can be computed in multiple ways. They generally are very simple and try to forecast the future as a mean of the past or a repetition of the last known value. In my case, I decided to implement the naive model by computing and repeating for each horizon, the mean of the last thirty values, i.e.\ a month more or less. 
+Naive models can be computed in multiple ways. They generally are very simple and try to forecast the future as a mean of the past or a repetition of the last known value. In my case, I decided to implement the naive model by computing and repeating for each horizon, the mean of the last thirty values, i.e.\ a month more or less. So my naive model is defined as : 
 
+\begin{equation}
+\hat{y}_t = \frac{1}{k} \sum_{i=0}^{k} y_{t-1-i}
+\end{equation}
 
+where k is fixed to 30.
 
 
 \section{Forecasting strategies}\label{strat}
@@ -409,10 +313,10 @@ Supervised learning approaches cover with success one-step-ahead prediction, whi
 There exists some strategies for k-step-ahead prediction in the literature which the most common are \cite{Bonte}\cite{taiebonte}:
 
 \begin{itemize}
-    \item \textbf{Iterated approaches} : we iterate $k$ times with a one-step-ahead predictor. Each time a value $\phi_{t+1}$ is predicted, it is used as input for the next iteration and therefore, errors propagate consequently. Recursive strategies can therefore be biased.
+    \item \textbf{Recursive approaches} : (also called iterated approaches) we iterate $k$ times with a one-step-ahead predictor. Each time a value $\phi_{t+1}$ is predicted, it is used as input for the next iteration and therefore, errors propagate consequently. Recursive strategies can therefore be biased.
     \item \textbf{Direct approaches} : we make $k$ direct separate predictions $\phi_{t+h}$ $\vee h \in \left[1, k\right]$ for the next $k$ unknown values, a different forecasting model being used for each horizon. Though, direct approaches makes a conditional independence assumption which may be incorrect to do. It also needs bigger time series than the iterated approach because of iterated generative's nature. Direct strategies have then less inputs in comparison. This leads to high variance for little time series or large horizon forecasting.
     \item \textbf{MIMO (multi-input multi-output) approaches} : The multi-input multi-output regression model returns a vector of $k$ consecutive predictions $\left\{\phi_{t+1},...,\phi_{t+k}\right\}$ in one step. MIMO mimics the direct approach strategy but preserving the stochastic dependency of the time series. The problem involved with MIMO is that in order to keep that stochastic dependency, all horizons have to be forecasted with the same model structure which can be restrictive. \cite{Bonte}\cite{taiebonte}
-    \item \textbf{Rectify approach} : Rectify is a strategy that takes advantage of the strengths of both recursive and direct strategies. The principle is to produce the predictions with the recursive strategy with a linear base model. As aforementioned, the results will be biased. Therefore we rectify the errors by adjusting the predictions with a nonlinear model with the direct strategy. This is supposed to reduce the bias of recursive linear systems. Rectify also proves to decrease variance's forecasts. \cite{BenTaieb}
+    \item \textbf{Rectify approach} : Rectify is a strategy that takes advantage of the strengths of both recursive and direct strategies. The principle is to first produce the predictions with the recursive strategy with a linear base model. As aforementioned, the results will be biased. Therefore, the second step of the strategy is to rectify the errors by adjusting the predictions with a nonlinear model with the direct strategy. This is supposed to reduce the bias of recursive linear systems. Rectify also proves to decrease variance's forecasts. \cite{BenTaieb}
 \end{itemize}
 
 
@@ -423,6 +327,67 @@ There exists some strategies for k-step-ahead prediction in the literature which
   \label{fig:biasvariance}
 \end{figure}
 
+
+
+\subsubsection{Data set structures requirements}
+
+The strategies described in this section above require the data to be held into a certain data structure. The structures will be described for the strategies used in the tool: the recursive and direct ones. 
+
+Indeed, we want the model to learn how to predict a value $Y$ at time $t$ according to a number past values, so we need to train a model that is able to predict $Y_t$ according to its $k$ past values. The number of $k$ past values, called the order of the model, is fixed beforehand.  
+
+E.g.\ , for the recursive approach, if the order of the model is 4, our model will try to predict $Y_t$ according to  $Y_{t-1}, Y_{t-2}, Y_{t-3}, Y_{t-4}$. Therefore our model is trained by passing a structure as shown on figure \ref{fig:recursive} where each input is a vector of $k$ past values of each input $Y_t$ in the training set, where $k$ is the order of the model, and where the corresponding output is the value $Y_t$. 
+ 
+
+\begin{figure}[!h]
+\centering
+\begin{minipage}{\textwidth}
+\begin{minipage}{0.5\textwidth}
+\begin{center}
+\textbf{Recursive}
+\begin{itemize}
+\item A single model for every horizon $h$.
+\item Forecast at step $h$ based on forecast at step $h-1$.
+\end{itemize}
+\vskip10pt
+   \begin{footnotesize}
+   \begin{tabular}{|cccc|c|}
+   \hline
+   \multicolumn{4}{|c|}{\textbf{input vector}} & \textbf{y} \\ \hline
+   $y_{1}$ & $y_{2}$ & $y_{3}$ & $y_{4}$ & $y_{5}$\\ \hline
+   $y_{2}$ & $y_{3}$ & $y_{4}$ & $y_{5}$ & $y_{6}$\\ \hline
+   $...$ & $...$ & $...$ & $...$ & $...$\\ \hline
+   $y_{t-4}$ & $y_{t-3}$ & $y_{t-2}$ & $y_{t-1}$ & $y_{t}$ \\ \hline
+   \end{tabular}
+   \end{footnotesize}
+\end{center}
+\end{minipage}
+\begin{minipage}{0.5\textwidth}
+\begin{center}
+\textbf{Direct}
+\begin{itemize}
+\item A single model for each horizon $h$.
+\item Forecast at $h$ step is made using $h^{\text{th}}$ model.
+\end{itemize}
+\vskip12pt
+   \begin{footnotesize}
+   \begin{tabular}{|cccc|c|}
+   \hline
+   \multicolumn{4}{|c|}{\textbf{input vector}} & \textbf{y} \\ \hline
+   $y_{1}$ & $y_{2}$ & $y_{3}$ & $y_{4}$ & $y_{6}$ \\ \hline
+   $y_{2}$ & $y_{3}$ & $y_{4}$ & $y_{5}$ & $y_{7}$ \\ \hline
+   $...$ & $...$ & $...$ & $...$ & $...$ \\ \hline
+   $y_{t-7}$ & $y_{t-6}$ & $y_{t-5}$ & $y_{t-4}$ & $y_{t-2}$ \\ \hline
+   \end{tabular}
+   \end{footnotesize}
+\end{center}
+\end{minipage}
+\end{minipage}
+\caption{Data structures required for the recursive and direct approaches.}
+\label{fig:recursive}
+\end{figure}
+
+
+Therefore one additional step of the pre-processing is to embed the data into a similar structure than can be passed to a model according to the strategy used. Note that for the direct strategy, as explained, one model has to be built for each horizon $h$ and therefore, each model requires the data to be re structured into a similar matrix but with different offsets of $h$.
 
 
 
@@ -438,12 +403,12 @@ We want to find a function that gives us the closest values to the output depend
 
 \subsection{Parametric identification}
 
-The parametric identification selects the parameters that minimises the disparity between the forecasted values and the output. Note that not all models have parametric identification. \cite{BenTaieb}
+The parametric identification selects the parameters that minimises the disparity between the forecasted values and the output. Note that not all models have parametric identification. In the case of the SVM, we search for the values of the cost and gamma parameters that reduce the most the gap between the forecasted values and the real output. \cite{BenTaieb}
 
 
 \subsection{Model validation}
 
-The model validation phase is the process of examining the accuracy of the model. Estimating the errors is important, and if the evaluation is not satisfying enough, one should take the learning process back to model generation. A good way of measuring the performance of a model is by proceeding with a rolling window. \cite{BenTaieb}
+The model validation phase is the process of examining the accuracy of the model. Estimating the errors is important, and if the evaluation is not satisfying enough, one should take the learning process back to model generation. A good way of measuring the performance of a model is by proceeding with a rolling window. Indeed, I chose a validation with a rolling window instead of a classical cross-validation because it ignores the temporal dependencies of time series. \cite{BenTaieb}
 
 
 \subsubsection{Rolling window forecasts}
@@ -458,13 +423,13 @@ In the web tool I designed, the minimum size of the window is taken as two-third
 
 \begin{figure}[!h]
   \centering
-    \includegraphics[scale=0.95]{img/rollingwindow.png}
+    \includegraphics[scale=0.7]{img/rollingwindow.png}
   \caption{Rolling window principle\cite{rolling}.}
   \label{fig:rolling}
 \end{figure}
 
 
-\subsubsection{Error measures and forecasting performance evaluation}
+\subsubsection{Error measures and forecasting performance evaluation}\label{errors}
 
 This subsection will contain a brief description of all the errors measures that I show in my tool. I offer a large panel of choice regarding errors so that anyone can analyse the one that best suits its needs. 
 
@@ -489,8 +454,8 @@ NNMSE = \frac{1}{n}\frac{\sum_{t=0}^{n} (y_t-\hat{y}_t)^2}{\sum_{t=0}^{n} (y_t-\
 Remarkable notes : 
 
 \begin{itemize}
-    \item MAPE is generally used for reporting to outsiders, because it expresses an error in percentages that anyone can imagine.
-    \item MASE is often the best performing performance meter because it avoids most of the problems induced by other error measures such as : scale independent, symmetry,... 
+    \item MAPE is generally used for reporting to outsiders, because it expresses an error in percentages that anyone can imagine and understand.
+    \item MASE is often the best performing performance meter because it avoids most of the problems induced by other error measures such as : scale independence, symmetry,... 
     \item NNMSE is a relative error showing how a model is better performing than the naive method. 
 \end{itemize}
 
@@ -501,6 +466,167 @@ Remarkable notes :
 Finally, model selection is the problem of choosing which method to use for a pool of possible methods. The best model should be chosen as the final model with the best related parametrisations. What is described as the best model is a good balance between fitting rightness and simplicity. \cite{BenTaieb}
 
 
+
+
+
+
+
+
+\chapter{Forecasting tool}
+
+As a major contribution for my master's thesis, I developed a web application tool in \textbf{$R$} that offers an easy and fast way to compare different machine learning models, forecasting some financial time series. The tool runs online and allows anyone to choose a financial time series, modify it, apply some machine learning models on it and tuning their parameters. 
+
+The rest of this chapter includes a tutorial on how to use the tool, information on the data sources and the algorithms used in this tool and a section on how to include more models and data sources. 
+
+
+\section{Presentation of the tool}
+
+This section describes how the tool works and what its components are. The web page is divided in three tabs : one for the data selection and visualisation, the second one to try and compare forecasting models and the last tab is for errors analysis. 
+
+Let's have a look at the first tab on figure \ref{fig:tool1} and its components descriptions.
+
+\subsection{Tab : Data inspection}
+
+
+\begin{figure}[!h]
+  \centering
+    \includegraphics[scale=0.44]{img/tab1.png}
+  \caption{View of the first tab of the tool.}
+  \label{fig:tool1}
+\end{figure}
+
+
+\begin{enumerate}
+\item This option allows one to choose a market. The corresponding data will be downloaded from $Yahoo!$ $Finance$. The data is automatically refreshed when needed.
+\item For each market there are different selectable options such as : the opening, closing, high and low prices and the volume.
+\item Rather than using the raw data, a transformation can be selected among the volatility of the data and the compound returns.
+\item The time series can be cut in time as desired by adjusting the starting date on the left and the end date on the right. This way, one can position his time series himself wherever he wants back in time.
+\item A plot to visualise the data as chosen by all the parameters.
+\item A summary of the data showing basic informations like the mean, first and third quartiles,...
+\end{enumerate}
+
+
+\subsection{Tab : Multi-step ahead forecasting}
+
+\begin{figure}[!h]
+  \centering
+    \includegraphics[scale=0.44]{img/tab2.png}
+  \caption{View of the second tab of the tool.}
+  \label{fig:tool2}
+\end{figure}
+
+\begin{enumerate}
+\item\inlineitem Those are the configurable parameters of the SVM : C, the cost \ref{cost} and $\gamma$, the Gaussian RBF kernel parameter.
+\item The order of the model, i.e.\ the number of days which are used to predict a value $Y$ at time $t$.
+\item The horizon is the number of days we try to predict in multi-step ahead forecasting.
+\item The strategies are defined in detail in section \ref{strat}.
+\item Those are some options to enable or disable the plotting of the models for a clearer visibility.
+\item This is the resulting plot with its legend. The plot is made with the library \textbf{plotly} that gives a lot of options like zooming, downloading,... The orange dotted line shows the separation between the training set and the test set. Here, we are manually toying with parameters and therefore the line represents the horizon cut, which may be different during model validation.
+\item This is a short table which resumes the errors of the models, as explained in section \ref{errors}, for the current forecasting. For a more general idea of how a model is usually performing, one should refer to the third and last tab of the web page. 
+\end{enumerate}
+
+
+
+\subsection{Tab : Average error}
+
+\begin{figure}[!h]
+  \centering
+    \includegraphics[scale=0.44]{img/tab3.png}
+  \caption{View of the third tab of the tool.}
+  \label{fig:tool3}
+\end{figure}
+
+
+\begin{enumerate}
+\item\inlineitem\inlineitem\inlineitem\inlineitem\inlineitem Those are the same parameters as those in the second tab.
+\item This is a table of means of errors. Using the selected parameters, each model is applied through the whole data set with a rolling window. The errors are averaged for each window over the whole data set by applying the same model.
+\end{enumerate}
+
+
+
+
+\section{Data sets}
+
+The tool proposes some default data sets such as data from $CAC40$, $S\&P 500$,... These data sets are directly downloaded from $Yahoo!$ $Finance$ and are daily refreshed. The data is publicly available and entirely free.
+
+Each data set is composed of : dates, opening, high, low and closing prices (OHLC) and the volumes of the stock. The OHLC format is very often used to view stock movements and provides more information for volatility calculations as explained in section \ref{volatility}. The low and high prices are the lowest and highest prices indices for a day and the opening and closing are respectively, the price at the start of the day when the stock market opens and the price when the stock market closes.
+
+The tool also ensures to refresh the data automatically when new data is available.
+
+
+
+\section{Libraries}
+
+The tool is written in \textbf{$R$} \cite{R} and it's web client-server part is mostly handled by a library called \textbf{Shiny} \cite{Shiny}.
+
+\textbf{Shiny} is a library that proposes a web application framework that handles everything, including client-server, on itself. It allows one to only care about the functionalities of the code and the library will take care of how things are updated on the client part, how the client interacts with the server, ...
+
+As for the rest, I use \textbf{Plotly} \cite{plotly} for the nice visual appearance plots and their nice interaction with the user. I use \textbf{e1071} \cite{e1071} for the SVM's models and \textbf{gbcode} \cite{gbcode} for the K-NNs models.
+
+Finally, the \textbf{quantmod} \cite{quantmod} package is a quantitative financial modelling framework and can be used for modelling in finance. The function $getSymbols$ of this library is used to download the data sets from the Internet.
+
+
+\section{Code}
+
+Due to the \textbf{Shiny} library, the code of the tool is very loosely coupled and easy to read. The code is decomposed in one file for each of the client-server parts, one configuration file, one for the errors measurements and one file per machine learning algorithm. 
+
+There is no apparent links between the server and the client because \textbf{Shiny} handles it all. The client part contains a list of widgets to display accompanied by their positioning and a unique tag that refers to a variable from the server that they will be linked to. On the other side, the server contains all the logic of the program and stores its results in variables that the client will access thanks to their tag/variable name.
+
+The configuration file, for its part, contains a list of data sets twinned with their respectively tag reference on $Yahoo!$ $Finance$. 
+
+The rest of this section contains more information on how one could tweak the code and integrate new data sets and models.
+
+
+\subsection{Add new data sets}
+
+To add a new data set, one has to find the tag reference of the market on $Yahoo!$ $Finance$ and add it to the configuration file following the same pattern as those already added; see the content of the configration file below : 
+
+
+\begin{lstlisting}
+markets        <- c( "^FCHI",  "^IXIC",   "^GSPC")
+names(markets) <- c("CAC 40", "NASDAQ", "S&P 500")
+\end{lstlisting}
+
+where the $markets$ are the tags, and the $names(markets)$ are the names displayed in the application.
+
+
+\subsection{Add new models}
+
+To add a new model, one can make a new function that takes in input a dataframe, a horizon and more parameters, and that returns the final predictions. As an example, below is the header of the function that computes the predictions with SVM : 
+
+\begin{lstlisting}
+svmForecast <- function(df, horizon, window, gamma = 1/window, 
+                            cost = 1, strategy = "recursive"){
+    ...
+    return predictedY
+}
+\end{lstlisting}
+
+
+On the client part, nothing has to be changed. Instead, there must be some inclusions of the new model computations on the server part.
+
+The server has then to be updated by adding the new model in the following functions : \textit{predPlot}, \textit{predTable}, \textit{errorTable}. They respectively correspond to the plotting function of the second tab, the predictions errors table on the second tab and the averaged errors of the rolling window table on the third tab of the tool. As an example, below is a piece of code of the function \textit{predPlot} : 
+
+\begin{lstlisting}
+output$predPlot <- renderPlotly({
+    # Initial plot
+    p <- plot_ly(y = df$target, x = df$date, type = 'scatter',
+                    mode = 'lines', name = 'Target')
+    ...
+    # Add forecasts for each model
+    predictedY <- svmForecast(df, trainingcut(), window(), gamma(), 
+                                    cost(), strategy())
+    p <- p %>% add_trace(x = getTestDf()$date, y = predictedY, 
+                                mode = 'lines')
+    ...
+}
+\end{lstlisting}
+
+First, the plot is created with \textbf{plotly}, and then the traces of each model's predictions are added to the plot.
+
+A special note : the \textbf{Shiny} library handles the fact that if a same function is called for multiple outputs, it is only computed once and the same results are returned for each output. Therefore, we can call \textit{svmForecast} for the plotting and the errors computations without doing over-computations because internally, \textbf{Shiny} handles it all and will update the results automatically if any of the parameters is changed.
+
+So any new model can be included in those functions by following the same structure as the models already present. Nothing else has to be changed.
 
 
 \chapter{Results}
