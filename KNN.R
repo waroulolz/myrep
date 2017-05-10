@@ -33,15 +33,15 @@ modelSelectionKNN <- function(ts,horizon,splitting_point,embedding=3,Kmin=5,min_
   # Looping to select the best number of neighbors of the NN 
   for (C in min_C:max_C) {
     switch(type,
-           recursive={ 
-             forecasts.matrix <- rbind(forecasts.matrix,multiplestepAhead(ts,embedding,horizon, 0, "iter", Kmin, C))
+           recursive={                                                  #Passing the past instead of whole TS 
+             forecasts.matrix <- rbind(forecasts.matrix,multiplestepAhead(ts.past,embedding,horizon, 0, "iter", Kmin, C))
            },
 
            direct={                                                     #Passing the past instead of whole TS 
              forecasts.matrix <- rbind(forecasts.matrix,multiplestepAhead(ts.past,embedding,horizon,0, "direct", Kmin, C))
            },
            mimo={ 
-             forecasts.matrix <- rbind(forecasts.matrix,multiplestepAhead(ts,embedding,horizon,D,"mimo",Kmin,C,FF))
+             forecasts.matrix <- rbind(forecasts.matrix,multiplestepAhead(ts.past,embedding,horizon,0,"mimo",Kmin,C))
            }
     )
   }

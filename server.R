@@ -20,7 +20,7 @@ extractDf <- function(data){
 
 
 creturn <- function(data){
-  cr <- c(0,log(1.0*data[2:length(data)] / data[1:length(data)-1]))
+  cr <- c(0, diff(log(data)))
   cr[(is.infinite(cr)) | is.na(cr)] <- 0
   cr
 }
@@ -30,7 +30,7 @@ volatility <- function(df){
   u <- log(df$highPrice/df$openingPrice)
   d <- log(df$lowPrice /df$openingPrice)
   c <- log(df$lastPrice/df$openingPrice)
-  df$target <- 0.511 * (u - d)**2 - (2 * log(2) - 1) * c**2
+  df$target <- 0.511 * (u - d)**2 - 0.019 * (c * (u + d) - 2 * u * d) - 0.383 * c**2
   df
 }
 
@@ -46,12 +46,12 @@ shinyServer(function(input, output, session) {
                       downloadData(markets[[input$market]])})
   
   #Parameters getters
-  window <- reactive({input$rwindow})
+  modelOrder <- reactive({input$modelOrder})
   trainingcut <- reactive({input$trainingcut})
   cost <- reactive({2^input$cost})
   gamma <- reactive({2^input$gamma})
   strategy <- reactive({input$strategy})
-  windowErr <- reactive({input$rwindowErr})
+  modelOrderErr <- reactive({input$modelOrderErr})
   trainingcutErr <- reactive({input$trainingcut})
   costErr <- reactive({2^input$costErr})
   gammaErr <- reactive({2^input$gammaErr})
@@ -150,21 +150,21 @@ shinyServer(function(input, output, session) {
       df$target <- (df$target - meanTarget) / sdTarget
       
       if (input$applySVM){
-        predictedY <- svmForecast(df, trainingcut(), window(), gamma(), cost(), strategy())
+        predictedY <- svmForecast(df, trainingcut(), modelOrder(), gamma(), cost(), strategy())
         predictedY <- (predictedY * sdTarget) + meanTarget
         p <- p %>% add_trace(x = getTestDf()$date, y = predictedY, 
                              mode = 'lines', name = paste('SVM (G=', gamma(), ', C=', cost(), ')', sep = ''))
       } 
 
       # Add default semi-optimized svm
-      predictedY <- svmForecast(df, trainingcut(), window(), strategy = strategy())
+      predictedY <- svmForecast(df, trainingcut(), modelOrder(), strategy = strategy())
       predictedY <- (predictedY * sdTarget) + meanTarget
       p <- p %>% add_trace(x = getTestDf()$date, y = predictedY, 
-                           mode = 'lines', name = paste('SVM default (G=', round(1/window(), 3), ', C=', 1, ')', sep = ''))
+                           mode = 'lines', name = paste('SVM default (G=', round(1/modelOrder(), 3), ', C=', 1, ')', sep = ''))
       
       if (input$applyKnnModel){
         predictedY <- modelSelectionKNN(df$target, trainingcut(), nrow(df) - trainingcut(),
-                                        window(), type = "direct", error_measure = MASE)$forecasts
+                                        modelOrder(), type = strategy(), error_measure = MASE)$forecasts
         predictedY <- (predictedY * sdTarget) + meanTarget
         p <- p %>% add_trace(x = getTestDf()$date, y = predictedY, 
                              mode = 'lines', name = "KNN model")
@@ -192,10 +192,10 @@ shinyServer(function(input, output, session) {
     df$target <- (df$target - meanTarget) / sdTarget
     
     # Get predictions for each model
-    svmPredY <- svmForecast(df, trainingcut(), window(), gamma(), cost(), strategy())
-    defaultSvmPredY <- svmForecast(df, trainingcut(), window(), strategy = strategy())
+    svmPredY <- svmForecast(df, trainingcut(), modelOrder(), gamma(), cost(), strategy())
+    defaultSvmPredY <- svmForecast(df, trainingcut(), modelOrder(), strategy = strategy())
     knnPredY <- modelSelectionKNN(df$target, trainingcut(), nrow(df) - trainingcut(),
-                                    window(), type = "direct", error_measure = MASE)$forecasts
+                                    modelOrder(), type = strategy(), error_measure = MASE)$forecasts
     naivePredY <- naiveForecast(df, trainingcut())
 
     #Unnormalise data
@@ -230,8 +230,8 @@ shinyServer(function(input, output, session) {
     NNMSEs <- c()
     
     # This is the loop of the rolling window 
-    minimumTrainingSize <- round(2*nrow(df)/3)
-    for (i in seq(minimumTrainingSize, nrow(df) - horizon(), horizon())){
+    minTrainSize <- round(2*nrow(df)/3)               # To limit to maximum 10 computations
+    for (i in seq(minTrainSize, nrow(df) - horizon(), max(horizon(),(nrow(df) - minTrainSize)/10))){
       horizon <- min(horizon(), nrow(df) - i)
       if (horizon > 0){
         # Normalise data, calculate mean and sd only on training set
@@ -240,18 +240,18 @@ shinyServer(function(input, output, session) {
         df$target <- (df$target - meanTarget) / sdTarget
         
         # Get predictions for each model
-        svmPredY <- svmForecast(head(df, i), horizon, windowErr(), gammaErr(), costErr(), strategyErr())
-        defaultSvmPredY <- svmForecast(head(df, i), horizon, windowErr(), strategy = strategyErr())
+        svmPredY <- svmForecast(head(df, i), horizon, modelOrderErr(), gammaErr(), costErr(), strategyErr())
+        defaultSvmPredY <- svmForecast(head(df, i), horizon, modelOrderErr(), strategy = strategyErr())
         knnPredY <- modelSelectionKNN(head(df, i)[, 2], horizon, i - horizon,
-                                      windowErr(), type = "direct", error_measure = MASE)$forecasts
+                                      modelOrderErr(), type = strategyErr(), error_measure = MASE)$forecasts
         naivePredY <- naiveForecast(head(df, i), horizon)
-        
         
         #Unnormalise data
         svmPredY        <- (svmPredY        * sdTarget) + meanTarget
         defaultSvmPredY <- (defaultSvmPredY * sdTarget) + meanTarget
         knnPredY        <- (knnPredY        * sdTarget) + meanTarget
         naivePredY      <- (naivePredY      * sdTarget) + meanTarget
+        df$target       <- (df$target       * sdTarget) + meanTarget 
         
         MSEs <- c(MSEs,      MSE(df[(i-horizon+1):i, ]$target, svmPredY),   MSE(df[(i-horizon+1):i, ]$target, defaultSvmPredY),
                              MSE(df[(i-horizon+1):i, ]$target, knnPredY),   MSE(df[(i-horizon+1):i, ]$target, naivePredY))

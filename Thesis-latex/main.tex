@@ -5,16 +5,50 @@
 \usepackage[T1]{fontenc}
 \usepackage[english]{babel}
 \usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{rotating}
+\usepackage{multirow}
+\usepackage{adjustbox}
 \usepackage{listings}
 \usepackage{hyperref}
 \usepackage{fancybox}
-\usepackage{xcolor}
 \usepackage{enumerate}
 \usepackage{amsmath}
 \usepackage{indentfirst}
 \usepackage[inline]{enumitem}
+\usepackage{xcolor}
 \usepackage{tikz}
 \linespread{1.5}
+\lstset{ %
+  language=R,                     % the language of the code
+  basicstyle=\footnotesize,       % the size of the fonts that are used for the code
+  numbers=left,                   % where to put the line-numbers
+  numberstyle=\tiny\color{gray},  % the style that is used for the line-numbers
+  stepnumber=1,                   % the step between two line-numbers. If it's 1, each line
+                                  % will be numbered
+  numbersep=5pt,                  % how far the line-numbers are from the code
+  backgroundcolor=\color{white},  % choose the background color. You must add \usepackage{color}
+  showspaces=false,               % show spaces adding particular underscores
+  showstringspaces=false,         % underline spaces within strings
+  showtabs=false,                 % show tabs within strings adding particular underscores
+  frame=single,                   % adds a frame around the code
+  rulecolor=\color{black},        % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. commens (green here))
+  tabsize=2,                      % sets default tabsize to 2 spaces
+  captionpos=b,                   % sets the caption-position to bottom
+  breaklines=true,                % sets automatic line breaking
+  breakatwhitespace=false,        % sets if automatic breaks should only happen at whitespace
+  title=\lstname,                 % show the filename of files included with \lstinputlisting;
+                                  % also try caption instead of title
+  keywordstyle=\color{blue},      % keyword style
+  otherkeywords={},
+  commentstyle=\color{green},     % comment style
+  stringstyle=\color{purple},     % string literal style
+  escapeinside={\%*}{*)},         % if you want to add a comment within your code
+  morekeywords={*, svmForecast, ly, getTestDf, renderPlotly, output, predPlot},            % if you want to add more keywords to the set
+  deletekeywords={df, date, mode, window, gamma, rownames}
+} 
+
 
 \newenvironment{myitemize}
 { \begin{itemize}
@@ -72,8 +106,128 @@
 
 \chapter{Background}
 
+In this chapter, I'll review the basics of the prediction of time series in order to have a brief introduction to machine learning. Therefore this chapter will be a quick reminder of fundamentals alongside some formal basic definitions. 
 
-\chapter{Related work}
+
+
+\section{Efficient Market Hypothesis}
+
+The efficient-market hypothesis (EMH) states that stock prices fully reflect all available information and that prices are immediately corrected by any news. This would mean that the market is unbeatable and therefore, forecasting would be impossible as the main assumption of forecasting is that any information of the past has some incidence on the future. Also some evidence argue against EMH proving that stock market is not efficient. Indeed it wrongly assumes that all investors are always rational. Also, sometimes only a few traders have knowledge of a particular new information jeopardising this theory. However, if this theory would hold, the best possible forecast would only be the addition of noise \cite{aamodt} : 
+
+\begin{center}
+    $Y_{n+1} = Y_{n} + \epsilon_{n}$
+\end{center}
+
+
+The question if the market is truly unbeatable still didn't reach any consensus. So while it is still only a theory, it is important to have an overview of the subject. 
+
+
+\section{Definitions}
+
+
+\subsection{Machine learning}
+
+A very well known quote from \textit{Tom Mitchell} defines machine learning as : 
+
+\vspace*{\fill} 
+\begin{quote} 
+\centering 
+``A computer program is said to learn from experience E with respect to some class of tasks T and performance measure P if its performance at tasks in T, as measured by P, improves with experience E'' -- \textit{Tom Mitchell, Carnegie Mellon University}. 
+\end{quote}
+\vspace*{\fill}
+
+
+Machine learning is helpful when there is a need of understanding a time series behaviour to make predictions on it, even if nothing is known about the nature of the time series. There exists different types of learning algorithms and some of them will be discussed in section \ref{MLalgs}.
+
+
+\subsection{Time series}
+
+A time series is a finite sequence of $n$ data points $Y_{t}$ $\epsilon$ $\Re$ observed over time. Points are often equally spaced by time intervals. All points are ordered by their timestamp and changing that order would change the meaning of the data. \cite{hyndman}
+
+\subsubsection{Examples}
+
+\begin{myitemize}
+    \item Numbers of sales of a company each month of year 2016.
+    \item Temperature measurements in a country over 20 years.
+    \item Electricity consumption in Belgium measured every half-hour for 100 days, representing 144000 values.
+    \item Unemployment rate in the United States (figure \ref{fig:US}).
+\end{myitemize}
+
+\begin{figure}[ht]
+  \centering
+    \includegraphics[scale=0.5]{img/Unemployment-Rate.png}
+  \caption{Unemployment rate in the United States}
+  \label{fig:US}
+\end{figure}
+
+
+
+\subsection{Forecasting}
+
+One of the biggest interests of studying time series is forecasting. Indeed, based on the previous observations of a time series $Y_{1},...,Y_{n}$, could we predict the future observations  $Y_{n+1}, Y_{n+2},...$? 
+
+It is possible under the strong assumption that a dependecy between the past and the future exists. The challenge is to find the \textit{\textbf{model}} that describes the best the pattern of the time series.
+
+Forecasts can be required for short-term, medium-term and long-term purposes. Short-term forecasting is about close in time scheduling and decision making. Medium-term forecasting helps to determine future resource requirements. And long-term forecasting is used for strategic planning with a long-term horizon. \cite{hyndman}
+
+
+
+
+
+\section{Stochastic models}
+
+Choosing a model is an important step in time series forecasting. A model's principal function is to describe how the most important \textit{\textbf{features}} of a time series can be combined to form a meaningful prediction. A \textit{\textbf{feature}} is an individual measurable characteristic, a variable. A model should explain how the past interacts with the future and if handling multiple time series, a model should explain how they affect each other. Finally, a model should accurately forecast future values of a time series. \cite{hyndman}
+
+We will first have a look at traditional stochastic models, such as ARMA and ARCH, that were studied for a very long time. Later, we will compare them with some machine learning algorithms that, in comparison, are still booming.
+
+
+\subsection{ARMA}
+
+ARMA is the main statistical model for univariate linear time series forecasting. ARMA is a combination of auto regressive (AR[p]) and moving average (MA[q]) models. Its general form is : 
+
+\begin{equation}
+Y_{t} = \sum\limits_{i=1}^p \phi_{i} Y_{t-i} +  \sum\limits_{i=1}^q \theta_{i} \epsilon_{t-i} + \epsilon_{t} 
+\end{equation}
+
+where $\phi_{i}$ and $\theta_{i}$ are the constant parameters and $\epsilon_{t}$ are independent errors also called \textit{\textbf{white noise}}. 
+
+However, the problem with ARMA is that it requires the time series to be stationary which isn't always the case. Otherwise, when the variance isn't constant, an ARCH model is the better choice. \cite{Holan}
+
+
+\subsection{ARCH \& GARCH}
+
+ARCH in an auto regressive (AR) conditional heteroscedastic (CH) model. It is useful when studying financial time series because it illustrates the evolution of high variance changes for short periods of time, also described as volatility clustering. For example, if a market incur a substantial drop, it can alert people to sell their stuff before it drops even more. Therefore we can observe conditional periods of increased variance followed by calmer periods. \cite{Holan}
+
+So, if we use ARCH as an auto regressive model of the variance of the series $y_t$ with zero mean, we can write the ARCH(q) model as : 
+\begin{equation}\label{eq:arch}
+\begin{matrix}
+y_t = \sigma_t \epsilon_t \\
+with \ \epsilon_t \sim iid(0,1) \\
+\sigma_t^2 = Var(y_t \mid y_{t-1},..., y_{t-q}) = \alpha_0 + \alpha_1 y_{t-1}^2 + ... + \alpha_q y_{t-q}^2
+\end{matrix}
+\end{equation}
+
+
+From there, GARCH (generalised ARCH) was introduced by adding moving-average components of the conditional variance to the ARCH model. The GARCH(p,q) model changes the definition of $\sigma_t^2$ in equation \ref{eq:arch} as : 
+
+\begin{equation}
+\sigma_t^2 = \alpha_0 + \sum_{j=1}^p\beta_j \sigma_{t-j}^2 + \sum_{k=1}^q\alpha_k y_{t-k}^2 
+\end{equation}
+
+where $ \beta_1,..., \beta_p \geq 0$ and $\alpha_1,...\alpha_q \geq 0$. \cite{Holan}
+
+
+
+\section{Volatility}
+
+Volatility defines the amplitude of variations of a time series. It is a key feature for financial time series analysis. Volatility represents a risk measure which is therefore directly related to risk management, a primary task of investors. Financial individuals are vulnerable to time changing volatility that causes uncertainty in risk assessment. 
+
+Volatility is a vague notion and an unobservable variable. It can be interpreted in multiple ways and therefore it has to be calculated with a proxy of conditional variance. It can either be seen as the standard deviation computed over a moving window of a determined size, it can be computed as the variance between returns, or it can be one of some of the definitions of volatility given by Garman and Klass \cite{garm} which will be described later in section \ref{vol}.
+
+While GARCH models are known to be very well suited for volatility forecasting as we have seen, I'll try to show through this thesis the capabilities of machine learning in that domain.
+
+Note that volatility forecasting is directly linked with multi-step-ahead forecasting here. Indeed, knowing the risk degree only one day ahead is not enough for traders to react and take actions on the market. Having an idea of the behaviour of volatility several days in advance is a big deal.
+
 
 
 
@@ -94,7 +248,9 @@ This chapter is dedicated to the \textit{modus operandi} of machine learning and
 
 \subsection{Structure of the data}
 
-One can choose to use the tool to forecast the data as is, or can choose to forecast the continuously compounded returns or the volatility of the data instead.
+One can choose to use the tool to forecast the original data as is, or can choose to forecast the continuously compounded returns or the volatility of the data instead.
+
+\subsubsection{Log returns}
 
 Log returns are often more interesting for financial time series because they show an unscaled value comparable with other returns. It is defined as :
 
@@ -104,17 +260,18 @@ r_{t_i} = \ln\frac{P_{t_i}}{P_{t_{i-1}}}
 
 where $P_{t_i}$ defines the price at time $i$.
 
-On the other side, volatility is the magnitude of changes in the prices of a financial asset. There are multiple ways of calculating the volatility of a financial time series, and one of the most suited should be one that considers historical opening, closing, high, and low
-prices and the volume. The estimator of volatility used in this tool is one of the most practical and efficient based on a study from Garman and Klass \cite{garm}:
+\subsubsection{Volatility}\label{vol}
 
-\begin{equation}
+On the other side, volatility is the magnitude of changes in the prices of a financial asset. There are multiple ways of calculating the volatility of a financial time series, and one of the most suited should be one that considers historical OHLC prices (see \ref{OHLC}). The estimator of volatility used in this tool is one of the most practical and efficient based on a study from Garman and Klass \cite{garm}:
+
+\begin{equation}\label{volatility}
 \begin{matrix}
 u = \ln\frac{P_t^{(h)}}{P_t^{(o)}} \qquad
 d = \ln\frac{P_t^{(l)}}{P_t^{(o)}} \qquad
 c = \ln\frac{P_t^{(c)}}{P_t^{(o)}} \\
-\hat{\sigma}\left ( t \right ) = 0.511\left ( u - d \right )^2 - \left ( 2\ln 2 - 1 \right )c^2
+\hat{\sigma}\left ( t \right ) = 0.511\left ( u - d \right )^2 - 0.019\left [ c\left (u + d\right ) - 2ud\right ] - 0.383c^2
 \end{matrix}
-\end{equation}\label{volatility}
+\end{equation}
 
 where $P_t^{(h)}$, $P_t^{(l)}$ and $P_t^{(c)}$ are respectively the high, low and opening prices at time $t$.
 
@@ -127,12 +284,12 @@ Normalisation is often required by some algorithms to ensure convergence and it 
 {x}' = \frac{x - \mu }{\sigma }
 \end{equation}
 
-so that we have a normal data set. Note that $\mu$, the mean of x, and $\sigma$, it's standard deviation, are calculated only on the training set with which the model will be trained. In this way, we avoid possible biases induced by not supposedly known information.
+so that we have a normal dataset. Note that $\mu$, the mean of x, and $\sigma$, it's standard deviation, are calculated only on the training set with which the model will be trained. In this way, we avoid possible biases induced by not supposedly known information.
 
 
 
 
-\section{Models}
+\section{Models}\label{MLalgs}
 
 \subsection{Support vector machines}
 
@@ -294,7 +451,7 @@ Naive models can be computed in multiple ways. They generally are very simple an
 \hat{y}_t = \frac{1}{k} \sum_{i=0}^{k} y_{t-1-i}
 \end{equation}
 
-where k is fixed to 30.
+where k is fixed to a month, so 30.
 
 
 \section{Forecasting strategies}\label{strat}
@@ -329,7 +486,7 @@ There exists some strategies for k-step-ahead prediction in the literature which
 
 
 
-\subsubsection{Data set structures requirements}
+\subsubsection{Dataset embeddings for multi-step forecasting}
 
 The strategies described in this section above require the data to be held into a certain data structure. The structures will be described for the strategies used in the tool: the recursive and direct ones. 
 
@@ -403,7 +560,7 @@ We want to find a function that gives us the closest values to the output depend
 
 \subsection{Parametric identification}
 
-The parametric identification selects the parameters that minimises the disparity between the forecasted values and the output. Note that not all models have parametric identification. In the case of the SVM, we search for the values of the cost and gamma parameters that reduce the most the gap between the forecasted values and the real output. \cite{BenTaieb}
+The parametric identification selects the parameters that minimises the disparity between the forecasted values and the output. Note that not all models have parametric identification. In the case of the SVM, we search for the values of the cost and gamma parameters that reduce the most the gap between the forecasted values and the real output. For KNN, we have to find $k$ as the number of instances that we take into account to determine similarities with classes. \cite{BenTaieb}
 
 
 \subsection{Model validation}
@@ -411,14 +568,14 @@ The parametric identification selects the parameters that minimises the disparit
 The model validation phase is the process of examining the accuracy of the model. Estimating the errors is important, and if the evaluation is not satisfying enough, one should take the learning process back to model generation. A good way of measuring the performance of a model is by proceeding with a rolling window. Indeed, I chose a validation with a rolling window instead of a classical cross-validation because it ignores the temporal dependencies of time series. \cite{BenTaieb}
 
 
-\subsubsection{Rolling window forecasts}
+\subsubsection{Rolling window forecasts}\label{rwindow}
 
 
 Rather than checking the performance of a model at one point in time, we would like to have a idea of how the model will generally perform. Sometimes we will have very accurate results, and other times the results will be worse, but we would like to have an idea of its general performance.
 
 The principle is to use the model through the whole time series with a rolling window of a fixed size as shown on figure \ref{fig:rolling}. For each window, the data is separated into a training and a testing set. The model is then trained and predictions are made. By comparing those with the actual values in the testing set, we can compute errors and by averaging those over the whole time series. In the end, we get an average of performance indicator.
 
-In the web tool I designed, the minimum size of the window is taken as two-thirds of the data set and the window is offset by the same value as the horizon.
+In the web tool I designed, the minimum size of the window is taken as two-thirds of the dataset and the window is offset by the same value as the horizon.
 
 
 \begin{figure}[!h]
@@ -433,21 +590,24 @@ In the web tool I designed, the minimum size of the window is taken as two-third
 
 This subsection will contain a brief description of all the errors measures that I show in my tool. I offer a large panel of choice regarding errors so that anyone can analyse the one that best suits its needs. 
 
-The errors showed are : MSE - Mean Squared Error, RMSE - Root Mean Squared Error, MAE - Mean Absolute Error, MAPE - Mean Absolute Percentage Error, sMAPE - Scaled Mean Absolute Percentage Error, MASE - Mean Absolute Scaled Error, NMSE - Normalized Mean Squared Error and the NNMSE - Normalized Naive Mean Squared Error and they are defined as follows :
+The errors shown in the tool are listed in the table below  : \\
 
 
-\begin{flalign}
-\begin{matrix}
-MSE = \frac{1}{n}\sum_{t=0}^n (y_t - \hat{y}_t)^2\\
-RMSE = \sqrt{\frac{1}{n} \sum_{t=0}^n (y_t - \hat{y}_t)^2} \\
-MAE = \frac{1}{n} \sum_{t=0}^n |y_t - \hat{y}_t|\\
-MAPE = \frac{1}{n} \sum_{t=0}^n  \mid 100 \cdot \frac{y_t - \hat{y}_t}{y_t}\mid\\	 
-sMAPE = \frac{100}{n} \sum_{t=0}^n \cdot \frac{\mid y_t - \hat{y}_t\mid}{\frac{y_t+\hat{y}_t}{2}}\\	 
-MASE = \frac{1}{n}\sum_{t=1}^n \left( \frac{\left| y_t - \hat{y}_t \right|}{\frac{1}{n-1}\sum_{i=2}^n \left| y_t-y_{t-1} \right|}\right)\\	 
-NMSE = \frac{1}{n}\frac{\sum_{t=0}^{n} (y_t-\hat{y}_t)^2}{var(y_t)} \\	 
-NNMSE = \frac{1}{n}\frac{\sum_{t=0}^{n} (y_t-\hat{y}_t)^2}{\sum_{t=0}^{n} (y_t-\hat{y}_{Naive,t})^2}
-\end{matrix}
-\end{flalign}
+\begin{tabular}{|l|c|r|}
+  \hline
+   Full Name & Acronym & Formula \\
+  \hline
+  Mean Squared Error & MSE & $\frac{1}{n}\sum_{t=0}^n (y_t - \hat{y}_t)^2$ \\
+  Root Mean Squared Error & RMSE & $\sqrt{\frac{1}{n} \sum_{t=0}^n (y_t - \hat{y}_t)^2}$ \\
+  Mean Absolute Error & MAE & $\frac{1}{n} \sum_{t=0}^n |y_t - \hat{y}_t|$ \\
+  Mean Absolute Percentage Error & MAPE & $\frac{1}{n} \sum_{t=0}^n  \mid 100 \cdot \frac{y_t - \hat{y}_t}{y_t}\mid$ \\
+  Scaled Mean Absolute Percentage Error & sMAPE & $\frac{100}{n} \sum_{t=0}^n \cdot \frac{\mid y_t - \hat{y}_t\mid}{\frac{y_t+\hat{y}_t}{2}}$ \\
+  Mean Absolute Scaled Error & MASE & $\frac{1}{n}\sum_{t=1}^n \left( \frac{\left| y_t - \hat{y}_t \right|}{\frac{1}{n-1}\sum_{i=2}^n \left| y_t-y_{t-1} \right|}\right)$ \\
+  Normalized Mean Squared Error & NMSE & $\frac{1}{n}\frac{\sum_{t=0}^{n} (y_t-\hat{y}_t)^2}{var(y_t)}$ \\
+  Normalized Naive Mean Squared Error & NNMSE & $\frac{1}{n}\frac{\sum_{t=0}^{n} (y_t-\hat{y}_t)^2}{\sum_{t=0}^{n} (y_t-\hat{y}_{Naive,t})^2}$ \\
+  \hline
+\end{tabular}
+\\
 
 
 
@@ -463,10 +623,7 @@ Remarkable notes :
 
 \subsection{Model selection}
 
-Finally, model selection is the problem of choosing which method to use for a pool of possible methods. The best model should be chosen as the final model with the best related parametrisations. What is described as the best model is a good balance between fitting rightness and simplicity. \cite{BenTaieb}
-
-
-
+Finally, model selection is the problem of choosing which method to use for a pool of possible methods. The best model should be chosen as the final model with the best related parametrisations. What is described as the best model is the model that performs the best on the validation set (i.e.\ testing set). That model should have the strongest capability of generalising, a good balance between fitting rightness and simplicity. \cite{BenTaieb}
 
 
 
@@ -539,17 +696,17 @@ Let's have a look at the first tab on figure \ref{fig:tool1} and its components 
 
 \begin{enumerate}
 \item\inlineitem\inlineitem\inlineitem\inlineitem\inlineitem Those are the same parameters as those in the second tab.
-\item This is a table of means of errors. Using the selected parameters, each model is applied through the whole data set with a rolling window. The errors are averaged for each window over the whole data set by applying the same model.
+\item This is a table of means of errors. Using the selected parameters, each model is applied through the whole dataset with a rolling window. The errors are averaged for each window over the whole dataset by applying the same model.
 \end{enumerate}
 
 
 
 
-\section{Data sets}
+\section{Datasets}\label{OHLC}
 
-The tool proposes some default data sets such as data from $CAC40$, $S\&P 500$,... These data sets are directly downloaded from $Yahoo!$ $Finance$ and are daily refreshed. The data is publicly available and entirely free.
+The tool proposes some default datasets such as data from $CAC40$, $S\&P 500$,... These datasets are directly downloaded from $Yahoo!$ $Finance$ and are daily refreshed. The data is publicly available and entirely free.
 
-Each data set is composed of : dates, opening, high, low and closing prices (OHLC) and the volumes of the stock. The OHLC format is very often used to view stock movements and provides more information for volatility calculations as explained in section \ref{volatility}. The low and high prices are the lowest and highest prices indices for a day and the opening and closing are respectively, the price at the start of the day when the stock market opens and the price when the stock market closes.
+Each dataset is composed of : dates, opening, high, low and closing prices (OHLC) and the volumes of the stock for each weekday. The OHLC format is very often used to view stock movements and provides more information for volatility calculations as explained in section \ref{volatility}. The low and high prices are the lowest and highest prices indices for a day and the opening and closing are respectively, the price at the start of the day when the stock market opens and the price when the stock market closes.
 
 The tool also ensures to refresh the data automatically when new data is available.
 
@@ -563,7 +720,7 @@ The tool is written in \textbf{$R$} \cite{R} and it's web client-server part is 
 
 As for the rest, I use \textbf{Plotly} \cite{plotly} for the nice visual appearance plots and their nice interaction with the user. I use \textbf{e1071} \cite{e1071} for the SVM's models and \textbf{gbcode} \cite{gbcode} for the K-NNs models.
 
-Finally, the \textbf{quantmod} \cite{quantmod} package is a quantitative financial modelling framework and can be used for modelling in finance. The function $getSymbols$ of this library is used to download the data sets from the Internet.
+Finally, the \textbf{quantmod} \cite{quantmod} package is a quantitative financial modelling framework and can be used for modelling in finance. The function $getSymbols$ of this library is used to download the datasets from the Internet.
 
 
 \section{Code}
@@ -572,14 +729,14 @@ Due to the \textbf{Shiny} library, the code of the tool is very loosely coupled 
 
 There is no apparent links between the server and the client because \textbf{Shiny} handles it all. The client part contains a list of widgets to display accompanied by their positioning and a unique tag that refers to a variable from the server that they will be linked to. On the other side, the server contains all the logic of the program and stores its results in variables that the client will access thanks to their tag/variable name.
 
-The configuration file, for its part, contains a list of data sets twinned with their respectively tag reference on $Yahoo!$ $Finance$. 
+The configuration file, for its part, contains a list of datasets twinned with their respectively tag reference on $Yahoo!$ $Finance$. 
 
-The rest of this section contains more information on how one could tweak the code and integrate new data sets and models.
+The rest of this section contains more information on how one could tweak the code and integrate new datasets and models.
 
 
-\subsection{Add new data sets}
+\subsection{Add new datasets}
 
-To add a new data set, one has to find the tag reference of the market on $Yahoo!$ $Finance$ and add it to the configuration file following the same pattern as those already added; see the content of the configration file below : 
+To add a new dataset, one has to find the tag reference of the market on $Yahoo!$ $Finance$ and add it to the configuration file following the same pattern as those already added; see the content of the configration file below : 
 
 
 \begin{lstlisting}
@@ -592,7 +749,8 @@ where the $markets$ are the tags, and the $names(markets)$ are the names display
 
 \subsection{Add new models}
 
-To add a new model, one can make a new function that takes in input a dataframe, a horizon and more parameters, and that returns the final predictions. As an example, below is the header of the function that computes the predictions with SVM : 
+To add a new model, one can make a new function that takes in input a dataframe, a horizon and more parameters, and that returns the final predictions as a list of values. As an example, below is the header of the function that computes the predictions with SVM : \\
+
 
 \begin{lstlisting}
 svmForecast <- function(df, horizon, window, gamma = 1/window, 
@@ -605,7 +763,7 @@ svmForecast <- function(df, horizon, window, gamma = 1/window,
 
 On the client part, nothing has to be changed. Instead, there must be some inclusions of the new model computations on the server part.
 
-The server has then to be updated by adding the new model in the following functions : \textit{predPlot}, \textit{predTable}, \textit{errorTable}. They respectively correspond to the plotting function of the second tab, the predictions errors table on the second tab and the averaged errors of the rolling window table on the third tab of the tool. As an example, below is a piece of code of the function \textit{predPlot} : 
+The server has then to be updated by adding the new model in the following functions : \textit{predPlot}, \textit{predTable}, \textit{errorTable}. They respectively correspond to the plotting function of the second tab, the predictions errors table on the second tab and the averaged errors of the rolling window table on the third tab of the tool. As an example, below is a piece of code of the function \textit{predPlot} : \\
 
 \begin{lstlisting}
 output$predPlot <- renderPlotly({
@@ -622,7 +780,29 @@ output$predPlot <- renderPlotly({
 }
 \end{lstlisting}
 
-First, the plot is created with \textbf{plotly}, and then the traces of each model's predictions are added to the plot.
+First, the plot is created with \textbf{plotly}, and then the traces of each model's predictions are added to the plot. 
+
+Another example is the function \textit{predTable} that shows the errors table on the second tab of the tool : \\
+
+\begin{lstlisting}
+output$predTable <- renderTable(rownames = TRUE, bordered = TRUE, {
+    df <- getDf()
+    ...
+    
+    # Get predictions for each model
+    svmPredY <- svmForecast(df, trainingcut(), modelOrder(), gamma(), cost(), strategy())
+    defaultSvmPredY <- svmForecast(df, trainingcut(), modelOrder(), strategy = strategy())
+    knnPredY <- modelSelectionKNN(df$target, trainingcut(), modelOrder(), strategy())$forecasts
+    naivePredY <- naiveForecast(df, trainingcut())
+
+    ...
+    
+    # Show the means of all errors in table
+    as.data.frame(getErrors(svmPredY, defaultSvmPredY, knnPredY, naivePredY, getTestDf()$target))
+  })
+\end{lstlisting}  
+  
+As one can see, the code is just about forecasting values with each model and compute the errors with the actual values. Adding a new model here is about adding a call to the model and adding the predictions to the errors computations. The function \textit{errorTable} is nearly the same. Note: the $getErrors()$ function doesn't exists but it represents the actual computations of the table that in reality takes too much place as the table is very big. 
 
 A special note : the \textbf{Shiny} library handles the fact that if a same function is called for multiple outputs, it is only computed once and the same results are returned for each output. Therefore, we can call \textit{svmForecast} for the plotting and the errors computations without doing over-computations because internally, \textbf{Shiny} handles it all and will update the results automatically if any of the parameters is changed.
 
@@ -630,6 +810,235 @@ So any new model can be included in those functions by following the same struct
 
 
 \chapter{Results}
+
+\section{Description of my experiments}
+
+I conducted experiments to search for the best SVM parameters to perform forecasting with a search grid. I will compare the averaged MSE and MASE over a rolling window validation as explained in \ref{rwindow}. First I will run the experiments on a reduced history of 6-12 months in order to select the most efficient model. After that, I will use the optimal models on a longer history (e.g. 10-15 years) to evaluate their performance over the long term and see if there is a model that is consistently performing better than the others. 
+
+The experiments will be run on the volatility of the \textit{CAC40} times series. I will use two different proxies for the volatility : the proxy described by equation \ref{volatility} also used in the tool (proxy 1), and the rolling standard deviation with a window of 21 days (proxy 2). All the experiments are run with a window of 21 days and a horizon of 7 days which are values that I found to perform well while using my tool.
+
+I made preliminary analysis by testing the SVM parameters with the tool I developed in order to better lead my grid searches. Therefore, not all results will be displayed with the same disparity.
+
+Concerning the search grid process, searching through exponentially growing sequences of $C$ and $\gamma$, such as powers of 2, is a practical method to identify good parameters. \cite{Hsu}
+
+
+\subsection{Reduced history}
+
+I first ran the experiment on a 9 months history. One will find on figure \ref{fig:plot6m} the plots of the time series with the applied proxies.
+
+
+\begin{figure}[!h]
+\centering
+\makebox[\linewidth]{%
+\begin{subfigure}{.55\linewidth}
+  \centering
+  \includegraphics[width=\linewidth]{img/plot6sigma.png}
+  \caption{Using proxy 1.}
+  \label{fig:sub1}
+\end{subfigure}%
+\begin{subfigure}{.55\linewidth}
+  \centering
+  \includegraphics[width=\linewidth]{img/plot6ma.png}
+  \caption{Using proxy 2.}
+  \label{fig:sub2}
+\end{subfigure}}
+\caption{Plots of the reduced time series using the two proxies.}
+\label{fig:plot6m}
+\end{figure}
+
+
+The results of the search grid can be visualised on the heat maps on figure \ref{fig:heat6m} where the resulting errors are displayed according to the parameters. The complete numeric results of the search grid can be found in appendix \ref{6mapp}. As on can see on the heat map, the most optimal cost and gamma parameters seem to be inversely proportional because the darkest squares form a diagonal. This is an indication of how one should use those parameters.
+
+Then on figure \ref{fig:table6m}, one will find, for each proxy, the results of the experiments expressed as the cost and gamma that lead to the smallest related error measure.
+
+
+\begin{figure}[!h]
+\centering
+\makebox[\linewidth]{%
+\begin{subfigure}{.55\linewidth}
+  \centering
+  \includegraphics[width=\linewidth]{img/6mMSEsigma.png}
+  \caption{MSE using proxy 1.}
+  \label{fig:heat1}
+\end{subfigure}%
+\begin{subfigure}{.55\linewidth}
+  \centering
+  \includegraphics[width=\linewidth]{img/6mMSEma.png}
+  \caption{MSE using proxy 2.}
+  \label{fig:heat2}
+\end{subfigure}}
+\makebox[\linewidth]{%
+\begin{subfigure}{.55\linewidth}
+  \centering
+  \includegraphics[width=\linewidth]{img/6mMASEsigma.png}
+  \caption{MASE using proxy 1.}
+  \label{fig:heat3}
+\end{subfigure}%
+\begin{subfigure}{.55\linewidth}
+  \centering
+  \includegraphics[width=\linewidth]{img/6mMASEma.png}
+  \caption{MASE using proxy 2.}
+  \label{fig:heat4}
+\end{subfigure}}
+\caption{Heat maps resulting of the search grid for each error using the two proxies.}
+\label{fig:heat6m}
+\end{figure}
+
+
+
+\begin{figure}[!h]
+\centering
+\begin{minipage}{\textwidth}
+\begin{minipage}{0.5\textwidth}
+\begin{center}
+\vskip10pt
+   \begin{footnotesize}
+   \begin{tabular}{|c|c|c|}
+   \hline
+   & \multicolumn{2}{|c|}{\textbf{Proxy 1}} \\ \cline{2-3}
+   & \textbf{MSE} & \textbf{MASE}          \\ \hline
+   Cost  & $2$            & $256$          \\ 
+   Gamma & $0.0001220703$ & $7.629395e-06$ \\ 
+   Error & $5.443549e-10$ & $1.227800$     \\ 
+   \hline
+   \end{tabular}
+   \end{footnotesize}
+\end{center}
+\end{minipage}
+\begin{minipage}{0.5\textwidth}
+\begin{center}
+\vskip12pt
+   \begin{footnotesize}
+   \begin{tabular}{|c|c|c|}
+   \hline
+   & \multicolumn{2}{|c|}{\textbf{Proxy 2}} \\ \cline{2-3}
+   & \textbf{MSE} & \textbf{MASE}          \\ \hline
+   Cost  & $2$      & $8$          \\ 
+   Gamma & $0.0625$ & $0.015625$ \\ 
+   Error & $143.7454$      & $2.742375$     \\ 
+   \hline
+   \end{tabular}
+   \end{footnotesize}
+\end{center}
+\end{minipage}
+\end{minipage}
+\caption{TODO}
+\label{fig:table6m}
+\end{figure}
+
+
+
+
+\clearpage
+\subsection{Longer history}
+
+Then, I ran the experiment on a 10 years history. One will find on figure \ref{fig:plot10y} the plots of the time series with the applied proxies.
+
+
+\begin{figure}[!h]
+\centering
+\makebox[\linewidth]{%
+\begin{subfigure}{.6\linewidth}
+  \centering
+  \includegraphics[width=\linewidth]{img/plot10sigma.png}
+  \caption{Using proxy 1.}
+  \label{fig:sub2.1}
+\end{subfigure}%
+\begin{subfigure}{.6\linewidth}
+  \centering
+  \includegraphics[width=\linewidth]{img/plot10ma.png}
+  \caption{Using proxy 2.}
+  \label{fig:sub2.2}
+\end{subfigure}}
+\caption{Plots of the longer time series using the two proxies.}
+\label{fig:plot10y}
+\end{figure}
+
+
+
+The results of the search grid can be visualised on the heat maps on figure \ref{fig:heat10y} where the resulting errors are displayed according to the parameters. The complete numeric results of the search grid can be found in appendix \ref{10yapp}. 
+
+Then on figure \ref{fig:table10y}, one will find, for each proxy, the results of the experiments expressed as the cost and gamma that lead to the smallest related error measure.
+
+
+\begin{figure}[!h]
+\centering
+\makebox[\linewidth]{%
+\begin{subfigure}{.55\linewidth}
+  \centering
+  \includegraphics[width=\linewidth]{img/10yMSEsigma.png}
+  \caption{MSE using proxy 1.}
+  \label{fig:heat2.1}
+\end{subfigure}%
+\begin{subfigure}{.55\linewidth}
+  \centering
+  \includegraphics[width=\linewidth]{img/10yMSEma.png}
+  \caption{MSE using proxy 2.}
+  \label{fig:heat2.2}
+\end{subfigure}}
+\makebox[\linewidth]{%
+\begin{subfigure}{.55\linewidth}
+  \centering
+  \includegraphics[width=\linewidth]{img/10yMASEsigma.png}
+  \caption{MASE using proxy 1.}
+  \label{fig:heat2.3}
+\end{subfigure}%
+\begin{subfigure}{.55\linewidth}
+  \centering
+  \includegraphics[width=\linewidth]{img/10yMASEma.png}
+  \caption{MASE using proxy 2.}
+  \label{fig:heat2.4}
+\end{subfigure}}
+\caption{Heat maps resulting of the search grid for each error using the two proxies.}
+\label{fig:heat10y}
+\end{figure}
+
+
+\begin{figure}[!h]
+\centering
+\begin{minipage}{\textwidth}
+\begin{minipage}{0.5\textwidth}
+\begin{center}
+\vskip10pt
+   \begin{footnotesize}
+   \begin{tabular}{|c|c|c|}
+   \hline
+   & \multicolumn{2}{|c|}{\textbf{Proxy 1}} \\ \cline{2-3}
+   & \textbf{MSE} & \textbf{MASE}          \\ \hline
+   Cost  & $4$            & $1024$          \\ 
+   Gamma & $0.00390625$ & $0.001953125$ \\ 
+   Error & $1.969437e-09$ & $1.696371$     \\ 
+   \hline
+   \end{tabular}
+   \end{footnotesize}
+\end{center}
+\end{minipage}
+\begin{minipage}{0.5\textwidth}
+\begin{center}
+\vskip12pt
+   \begin{footnotesize}
+   \begin{tabular}{|c|c|c|}
+   \hline
+   & \multicolumn{2}{|c|}{\textbf{Proxy 2}} \\ \cline{2-3}
+   & \textbf{MSE} & \textbf{MASE}          \\ \hline
+   Cost  & $16$      & $512$          \\ 
+   Gamma & $0.03125$ & $0.0004882812$ \\ 
+   Error & $462.2867$      & $7.885050$     \\ 
+   \hline
+   \end{tabular}
+   \end{footnotesize}
+\end{center}
+\end{minipage}
+\end{minipage}
+\caption{TODO}
+\label{fig:table10y}
+\end{figure}
+
+
+
+
+
+
 
 
 \chapter{Conclusion \& Future Work }
@@ -641,7 +1050,35 @@ So any new model can be included in those functions by following the same struct
 \section{Future work}
 
 
+
+
+\clearpage
+\appendix
+\chapter{Search grid on reduced history}\label{6mapp}
+
+\input{proxy1MSE6M.tex}
+
+\input{proxy1MASE6M.tex}
+
+\input{proxy2MSE6M.tex}
+
+\input{proxy2MASE6M.tex}
+
+
+\chapter{Search grid on longer history}\label{10yapp}
+
+\input{proxy1MSE10y.tex}
+
+\input{proxy1MASE10y.tex}
+
+\input{proxy2MSE10y.tex}
+
+\input{proxy2MASE10y.tex}
+
+
+
 \bibliographystyle{unsrt}
 \bibliography{biblio.bib}
+
 
 \end{document}

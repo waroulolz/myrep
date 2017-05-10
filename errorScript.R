@@ -1,58 +1,119 @@
 library(plotly)
 library(e1071)
 library(caret)
+library("quantmod")
 source("C:/Users/GG/Desktop/Memoire/myrep/ErrorMeasures.R")
 source("C:/Users/GG/Desktop/Memoire/myrep/SVM.R")
 
 
 #Data extraction
-volume <- read.csv(paste(dataDirectory, 'cac40_dataset_volume.CSV', sep=""), sep = "")
-sigma_4 <- read.csv(paste(dataDirectory, 'cac40_6y_dataset_sigma_4.csv', sep=""), sep = "")
-rv_50 <- read.csv(paste(dataDirectory, 'cac40_dataset_rv_50.csv', sep=""), sep = "")
-ccreturn <- read.csv(paste(dataDirectory, 'cac40_dataset_ccreturn.csv', sep=""), sep = "")
-volume$date <- as.Date(volume$Index)
-sigma_4$date <- as.Date(sigma_4$Index)
-rv_50$date <- as.Date(rv_50$Index)
-ccreturn$date <- as.Date(ccreturn$Index)
-names(volume) <- gsub("X", "", names(volume))
-names(sigma_4) <- gsub("X", "", names(sigma_4))
-names(rv_50) <- gsub("X", "", names(rv_50))
-names(ccreturn) <- gsub("X", "", names(ccreturn))
+extractDf <- function(data){
+  data <- data.frame(Date = index(data), data = coredata(data))
+  data[ncol(data)] <- NULL
+  names(data) <- c("date", "openingPrice", "highPrice", "lowPrice", "lastPrice", "volume")
+  data
+}
+
+
+creturn <- function(data){
+  cr <- c(0, diff(log(data)))
+  cr[(is.infinite(cr)) | is.na(cr)] <- 0
+  cr
+}
+
+
+volatilitySigma4 <- function(df){
+  u <- log(df$highPrice/df$openingPrice)
+  d <- log(df$lowPrice /df$openingPrice)
+  c <- log(df$lastPrice/df$openingPrice)
+  df$target <- 0.511 * (u - d)**2 - 0.019*(c * (u + d) - 2 * u * d) - 0.383 * c**2
+  df
+}
+
+volatilitySdAverage <- function(df){
+  vol <- apply(embed(df$lastPrice, 21), MARGIN = 1, FUN = sd)
+  df <- tail(head(df, -10), -10)
+  df$target <- vol
+  df
+}
 
 
 
 # Computes succesive errors with a rolling origin training set
-computeErrors <- function(df, horizon, gamma, cost, window){
-  MAPEs <- c()
-  minimumTrainingSize <- round(2*nrow(df)/3)
-  for (i in seq(minimumTrainingSize, nrow(df), horizon)){
+computeErrors <- function(df, horizon, window, gamma, cost){
+  MSEs <- c()
+  MASEs <- c()
+  minTrainSize <- round(2*nrow(df)/3)
+  for (i in seq(minTrainSize, nrow(df), max(horizon, (nrow(df) - minTrainSize)/10))){
     horizon <- min(horizon, nrow(df) - i)
     if (horizon > 0){
-      predictedY <- svmForecast(head(df, i), gamma, cost, horizon, window)
-      MAPEs <- c(MAPEs, MAPE(df[(i-horizon+1):i, ]$target, predictedY))
+      
+      # Normalise data, calculate mean and sd only on training set
+      meanTarget <- mean(head(head(df, i), -horizon)$target) 
+      sdTarget <- sd(head(head(df, i), -horizon)$target)
+      df$target <- (df$target - meanTarget) / sdTarget
+      
+      predictedY <- svmForecast(head(df, i), horizon, window, gamma, cost)
+      
+      #Unnormalise data
+      predictedY  <- (predictedY * sdTarget) + meanTarget
+      df$target   <- (df$target  * sdTarget) + meanTarget 
+      
+      MSEs <- c(MSEs, MSE(df[(i-horizon+1):i, ]$target, predictedY))
+      MASEs <- c(MASEs, MASE(df[(i-horizon+1):i, ]$target, predictedY))
     }
   }
-  mean(MAPEs)
+  c(mean(MSEs), mean(MASEs))
 }
 
+benchmark <- function(gammas, costs) {
+  MSEBench <- matrix(0, ncol = length(gammas), nrow = length(costs), dimnames = list(costs, gammas))
+  MASEBench <- matrix(0, ncol = length(gammas), nrow = length(costs), dimnames = list(costs, gammas))
+  for (gamma in gammas){
+    for (cost in costs){
+      errors <- computeErrors(dd, horizon, window, gamma, cost)
+      MSEBench[as.character(cost), as.character(gamma)] <- errors[[1]]
+      MASEBench[as.character(cost), as.character(gamma)] <- errors[[2]]
+    }
+  }
+  list(MSEBench, MASEBench)
+}
+
+cac <- getSymbols("^FCHI", src="yahoo", to = Sys.Date(), auto.assign = FALSE) 
+sp <- getSymbols("^GSPC", src="yahoo", to = Sys.Date(), auto.assign = FALSE) 
+
+cac <- extractDf(cac)
+sp <- extractDf(sp)
 
 
-df <- tail(volume, 365)
-df <- df[ , colSums(is.na(df)) == 0]
 
-
-# For a configuration of those parameters, computes a mean error with a rolling origin
-
+# Below the modifiable parameters to perform a grid search benchmark.
 window <- 21
-horizon <- 5
-gamma <- 0.5
-cost <- 0.5
+horizon <- 7
 
-meanErrors <- c()
-for (column in names(df)[2:(ncol(df)-1)]){
-  dd <- df[c("date", column)]
-  names(dd) <- c("date", "target")
-  meanErrors <- c(meanErrors, computeErrors(dd, horizon, gamma, cost, window))
-}
 
-mean(meanErrors)
+df <- cac
+df <- volatilitySdAverage(df)
+
+dd <- df[c("date", "target")]
+
+
+costs  <- 2^(-3:8)
+gammas <- 2^(-8:3)
+results <- benchmark(gammas, costs)
+paramBench <- results[[1]] # 1 is MSE, 2 is MASE
+bestC <-  costs[which(paramBench == min(paramBench), arr.ind = TRUE)[1]]
+bestG <- gammas[which(paramBench == min(paramBench), arr.ind = TRUE)[2]]
+paramBench
+bestC
+bestG
+#, colors = "RdGy"
+plot_ly(z = paramBench,  type = "heatmap", y = rownames(paramBench), x = colnames(paramBench))%>%
+  layout(xaxis = list(title = "Gamma", categoryorder = "array", categoryarray = colnames(paramBench)),
+         yaxis = list(title = "Cost",  categoryorder = "array", categoryarray = rownames(paramBench)))
+plot_ly(dd, x = ~date, y = ~target, type = 'scatter', mode = 'lines')
+
+#Export to latex table
+rownames(paramBench) <- paste(rep(2,11), (-3:8), sep = "^")
+colnames(paramBench) <- paste(rep(2,11), (-8:3), sep = "^")
+print(xtable(paramBench)) #,digits=-3

@@ -46,7 +46,7 @@ shinyUI(
                         "Parameter Gamma :",
                         min = -7, max = 6, value = -6, pre = "2^", ticks = FALSE),
 
-            sliderInput("rwindow",
+            sliderInput("modelOrder",
                         "Order of the model :",
                         min = 2, max = 50, value = 21),
 
@@ -83,7 +83,7 @@ shinyUI(
                        "Parameter Gamma :",
                        min = -7, max = 6, value = -6, pre = "2^", ticks = FALSE),
 
-            sliderInput("rwindowErr",
+            sliderInput("modelOrderErr",
                        "Order of the model :",
                        min = 2, max = 50, value = 21),
 
