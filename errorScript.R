@@ -3,6 +3,7 @@ library(e1071)
 library(caret)
 library("quantmod")
 source("C:/Users/GG/Desktop/Memoire/myrep/ErrorMeasures.R")
+source("C:/Users/GG/Desktop/Memoire/myrep/KNN.R")
 source("C:/Users/GG/Desktop/Memoire/myrep/SVM.R")
 
 
@@ -39,6 +40,12 @@ volatilitySdAverage <- function(df){
 
 
 
+naiveForecast <- function(df, horizon){
+  # Moving average forecast - Average of the last data according to a certain embedding e
+  e <- 30
+  rep(mean(tail(head(df, -horizon)$target, e)), horizon)
+}
+
 # Computes succesive errors with a rolling origin training set
 computeErrors <- function(df, horizon, window, gamma, cost){
   MSEs <- c()
@@ -63,8 +70,83 @@ computeErrors <- function(df, horizon, window, gamma, cost){
       MASEs <- c(MASEs, MASE(df[(i-horizon+1):i, ]$target, predictedY))
     }
   }
+  browser()
   c(mean(MSEs), mean(MASEs))
 }
+
+
+# Computes succesive errors with a rolling origin training set
+computeErrorsNaive <- function(df, horizon, window){
+  MSEs <- c()
+  MASEs <- c()
+  minTrainSize <- round(2*nrow(df)/3)
+  for (i in seq(minTrainSize, nrow(df), max(horizon, (nrow(df) - minTrainSize)/10))){
+    horizon <- min(horizon, nrow(df) - i)
+    if (horizon > 0){
+      
+      # Normalise data, calculate mean and sd only on training set
+      meanTarget <- mean(head(head(df, i), -horizon)$target) 
+      sdTarget <- sd(head(head(df, i), -horizon)$target)
+      df$target <- (df$target - meanTarget) / sdTarget
+
+      predictedY <- naiveForecast(head(df, i), horizon)
+
+      #Unnormalise data
+      predictedY  <- (predictedY * sdTarget) + meanTarget
+      df$target   <- (df$target  * sdTarget) + meanTarget 
+      
+      MSEs <- c(MSEs, MSE(df[(i-horizon+1):i, ]$target, predictedY))
+      MASEs <- c(MASEs, MASE(df[(i-horizon+1):i, ]$target, predictedY))
+    }
+  }
+  browser()
+  c(mean(MSEs), mean(MASEs))
+}
+
+
+# Computes succesive errors with a rolling origin training set
+computeErrorsKNN <- function(df, horizon, window, C){
+  MSEs <- c()
+  MASEs <- c()
+  minTrainSize <- round(2*nrow(df)/3)
+  for (i in seq(minTrainSize, nrow(df), max(horizon, (nrow(df) - minTrainSize)/10))){
+    horizon <- min(horizon, nrow(df) - i)
+    if (horizon > 0){
+      
+      # Normalise data, calculate mean and sd only on training set
+      meanTarget <- mean(head(head(df, i), -horizon)$target) 
+      sdTarget <- sd(head(head(df, i), -horizon)$target)
+      df$target <- (df$target - meanTarget) / sdTarget
+                                                                                                                  # Range in Rule of thumb
+      res <- modelSelectionKNN(head(df, i)$target, horizon, i - horizon, window, type = "recursive", min_C=C,max_C=C, error_measure = MASE)
+      predictedY <- res$forecasts
+      #print(res$best_k)
+      #Unnormalise data
+      predictedY  <- (predictedY * sdTarget) + meanTarget
+      df$target   <- (df$target  * sdTarget) + meanTarget 
+      
+      MSEs <- c(MSEs, MSE(df[(i-horizon+1):i, ]$target, predictedY))
+      MASEs <- c(MASEs, MASE(df[(i-horizon+1):i, ]$target, predictedY))
+    }
+  }
+  c(mean(MSEs), mean(MASEs))
+}
+
+benchmarkKnn <- function(Cs) {
+  MSEBench  <- matrix(0, ncol = length(Cs), nrow = 1, dimnames = list("err", Cs))
+  MASEBench <- matrix(0, ncol = length(Cs), nrow = 1, dimnames = list("err", Cs))
+  for (C in Cs){
+    errors <- computeErrorsKNN(dd, horizon, window, C)
+    MSEBench[as.character("err"), as.character(C)] <- errors[[1]]
+    MASEBench[as.character("err"), as.character(C)] <- errors[[2]]
+    
+  }
+  list(MSEBench, MASEBench)
+}
+
+results2 <- benchmarkKnn(c(1:100))
+results2
+
 
 benchmark <- function(gammas, costs) {
   MSEBench <- matrix(0, ncol = length(gammas), nrow = length(costs), dimnames = list(costs, gammas))
@@ -78,6 +160,9 @@ benchmark <- function(gammas, costs) {
   }
   list(MSEBench, MASEBench)
 }
+
+
+
 
 cac <- getSymbols("^FCHI", src="yahoo", to = Sys.Date(), auto.assign = FALSE) 
 sp <- getSymbols("^GSPC", src="yahoo", to = Sys.Date(), auto.assign = FALSE) 
@@ -93,13 +178,19 @@ horizon <- 7
 
 
 df <- cac
-df <- volatilitySdAverage(df)
+df <- volatilitySigma4(df)
 
 dd <- df[c("date", "target")]
+dd <- tail(dd, 6*30)
 
 
-costs  <- 2^(-3:8)
-gammas <- 2^(-8:3)
+
+results3 <- computeErrorsNaive(dd, horizon, window)
+results3
+
+
+costs  <- 2^(4:4)
+gammas <- 2^(-5:-5)
 results <- benchmark(gammas, costs)
 paramBench <- results[[1]] # 1 is MSE, 2 is MASE
 bestC <-  costs[which(paramBench == min(paramBench), arr.ind = TRUE)[1]]

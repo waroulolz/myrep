@@ -1,0 +1,39 @@
+\begin{figure}[!h]
+\centering
+\begin{minipage}{\textwidth}
+\begin{minipage}{0.5\textwidth}
+\begin{center}
+\vskip10pt
+   \begin{footnotesize}
+   \begin{tabular}{|c|c|c|}
+   \hline
+   & \multicolumn{2}{|c|}{\textbf{Proxy 1}} \\ \cline{2-3}
+   & \textbf{MSE} & \textbf{MASE}          \\ \hline
+   SVM  & $5.443549e-10$ & $1.2278$         \\ 
+   KNN & $6.492108e-10$ & $1.518099$ \\ 
+   Naive & $6.144618e-10$ & $1.483807$     \\ 
+   \hline
+   \end{tabular}
+   \end{footnotesize}
+\end{center}
+\end{minipage}
+\begin{minipage}{0.5\textwidth}
+\begin{center}
+\vskip12pt
+   \begin{footnotesize}
+   \begin{tabular}{|c|c|c|}
+   \hline
+   & \multicolumn{2}{|c|}{\textbf{Proxy 2}} \\ \cline{2-3}
+   & \textbf{MSE} & \textbf{MASE}          \\ \hline
+   SVM  & $143.7454$      & $2.742375$         \\ 
+   KNN & $168.642$      & $3.0839$ \\ 
+   NAIVE & $306.892442$ & $6.477913$      \\ 
+   \hline
+   \end{tabular}
+   \end{footnotesize}
+\end{center}
+\end{minipage}
+\end{minipage}
+\caption{Comparison of the results between the models for the reduced history.}
+\label{fig:compare6m}
+\end{figure}

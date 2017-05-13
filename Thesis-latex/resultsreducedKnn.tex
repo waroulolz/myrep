@@ -1,0 +1,63 @@
+\begin{figure}[!h]
+\centering
+\begin{minipage}{\textwidth}
+\begin{minipage}{0.5\textwidth}
+\begin{center}
+\vskip10pt
+   \begin{footnotesize}
+   \begin{tabular}{|c|c|c|}
+   \hline
+   & \multicolumn{2}{|c|}{\textbf{Proxy 1}} \\ \cline{2-3}
+   & \textbf{MSE} & \textbf{MASE}          \\ \hline
+   K  & $15$    & $15$          \\ 
+   Error & $6.492108e-10$ & $1.518099$     \\ 
+   \hline
+   \end{tabular}
+   \end{footnotesize}
+\end{center}
+\end{minipage}
+\begin{minipage}{0.5\textwidth}
+\begin{center}
+\vskip12pt
+   \begin{footnotesize}
+   \begin{tabular}{|c|c|c|}
+   \hline
+   & \multicolumn{2}{|c|}{\textbf{Proxy 2}} \\ \cline{2-3}
+   & \textbf{MSE} & \textbf{MASE}          \\ \hline
+   K  & $1$          & $4$          \\ 
+   Error & $168.642$ & $3.0839$     \\ 
+   \hline
+   \end{tabular}
+   \end{footnotesize}
+\end{center}
+\end{minipage}
+\end{minipage}
+\caption{Results of the best parameters configurations with the search grid.}
+\label{fig:table6mKnn}
+\makebox[\linewidth]{%
+\begin{subfigure}{.25\linewidth}
+  \centering
+  \includegraphics[width=\linewidth]{img/6msigmaMsebp.png}
+  \caption{Proxy 1 MSE.}
+  \label{fig:bp1b}
+\end{subfigure}%
+\begin{subfigure}{.25\linewidth}
+  \centering
+  \includegraphics[width=\linewidth]{img/6msigmaMasebp.png}
+  \caption{Proxy 1 MASE.}
+  \label{fig:bp2b}
+\end{subfigure}
+\begin{subfigure}{.25\linewidth}
+  \centering
+  \includegraphics[width=\linewidth]{img/6mmaMsebp.png}
+  \caption{Proxy 2 MSE.}
+  \label{fig:bp3b}
+\end{subfigure}
+\begin{subfigure}{.25\linewidth}
+  \centering
+  \includegraphics[width=\linewidth]{img/6mmaMasebp.png}
+  \caption{Proxy 2 MASE.}
+  \label{fig:bp4b}
+\end{subfigure}}
+\caption{Box plots of the MSE and MASE errors with the best parameters for the rolling window cross-validation.}
+\end{figure}

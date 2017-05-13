@@ -104,6 +104,22 @@
 \chapter{Introduction}
 
 
+Financial time series analysis drew significant attention in recent years. Traders, investors, markets analysts, even anyone who follows the stock markets are all interested in a better understanding of price fluctuations. With all the medias and high-tech information constantly available, the stock prices can radically change from a day to another. 
+The risks associated to falling prices are real and traders have to cope with them daily. A better understanding of stock prices behaviour would help traders to make decisions. This explains the consequent interest increase in accurate forecasting of future fluctuations.
+
+The forecasting domain has largely been covered by linear statistical methods such as : ARIMA, GARCH... However, financial time series are often nonlinear and therefore those methods do not apply. Some nonlinear methods have been studied, but they have not been pushed as far as the linear ones described before. Furthermore, generally in order to work, statistical methods requires that the data meet some assumptions. On the other hand, machine learning is able to find patterns in data even without knowing the structure of it. 
+
+Machine learning might therefore be more adequate to the forecasting of those series. Machine learning is booming and yet has proven to be high performing. Also, the huge increase of the available data makes it too large for traditional analytics. Therefore machine learning is a more suitable choice.
+
+This master's thesis will focus on using machine learning techniques to be able to forecast the future of financial time series. In particular, my goal is to position the support vector machine algorithm's performance compared to more established algorithms for financial time series.
+
+In addition to scientific research, another goal is the development of an autonomous analysis tool to perform and compare multiple machine learning algorithms on financial times series. All the methodology will be put into a tool that can be used without even knowing anything about machine learning.
+
+One will find in this document an overview of the state of art concerning financial time series. First there will a quick reminder of fundamentals and basic definitions. After that, a whole chapter will be dedicated to the methodology and the procedures to follow in order to achieve machine learning forecasting. Next will follow a presentation of the developed tool. Finally, a chapter will be devoted to the results of experiences measuring the machine learning algorithm's performances.
+
+
+
+
 \chapter{Background}
 
 In this chapter, I'll review the basics of the prediction of time series in order to have a brief introduction to machine learning. Therefore this chapter will be a quick reminder of fundamentals alongside some formal basic definitions. 
@@ -423,7 +439,7 @@ where $K\left ( x_i, x \right )$ is the kernel function. The most popular kernel
 K\left ( x_i, x \right ) = \exp \left ( -\gamma \left \| x - x_i \right \|^2 \right )
 \end{equation}
 
-where $\gamma$\label{gamma} is the parameter that defines how much influence a single training example can have. A small gamma means that the influence of $x_i$ is more important (and so large variance, small bias) and vice versa.
+where $\gamma$\label{gamma} is the parameter that defines how far the influence a single training example is. It might be considered as a regularisation parameter. With a high gamma, the closest training examples from the decision boundary pull a lot more weight than farthest ones. On the other side, a small gamma means that the influence of $x_i$ is more important (and so imply large variance, small bias) and vice versa.
 
 As a final note, one should keep in mind that he can combine multiple kernels in order to better capture the feature's natures, especially if the input is made of different sources.
 
@@ -673,7 +689,7 @@ Let's have a look at the first tab on figure \ref{fig:tool1} and its components 
 \end{figure}
 
 \begin{enumerate}
-\item\inlineitem Those are the configurable parameters of the SVM : C, the cost \ref{cost} and $\gamma$, the Gaussian RBF kernel parameter.
+\item\inlineitem Those are the configurable parameters of the SVM : C, the cost \ref{cost} and $\gamma$, the Gaussian RBF kernel parameter. The Knn algorithm already finds the best parameter for $K$ with a fast automated cross-validation.
 \item The order of the model, i.e.\ the number of days which are used to predict a value $Y$ at time $t$.
 \item The horizon is the number of days we try to predict in multi-step ahead forecasting.
 \item The strategies are defined in detail in section \ref{strat}.
@@ -708,8 +724,10 @@ The tool proposes some default datasets such as data from $CAC40$, $S\&P 500$,..
 
 Each dataset is composed of : dates, opening, high, low and closing prices (OHLC) and the volumes of the stock for each weekday. The OHLC format is very often used to view stock movements and provides more information for volatility calculations as explained in section \ref{volatility}. The low and high prices are the lowest and highest prices indices for a day and the opening and closing are respectively, the price at the start of the day when the stock market opens and the price when the stock market closes.
 
-The tool also ensures to refresh the data automatically when new data is available.
 
+\section{Always up-to-date}
+
+The tool ensures that the data is automatically refreshed when new data is available. When new data is downloaded, the models are also automatically updated with the new data without having to do anything. This is an important feature of the tool because it really shows its independence. The tool acts like a standalone app that constantly provides up-to-date information. 
 
 
 \section{Libraries}
@@ -718,7 +736,7 @@ The tool is written in \textbf{$R$} \cite{R} and it's web client-server part is 
 
 \textbf{Shiny} is a library that proposes a web application framework that handles everything, including client-server, on itself. It allows one to only care about the functionalities of the code and the library will take care of how things are updated on the client part, how the client interacts with the server, ...
 
-As for the rest, I use \textbf{Plotly} \cite{plotly} for the nice visual appearance plots and their nice interaction with the user. I use \textbf{e1071} \cite{e1071} for the SVM's models and \textbf{gbcode} \cite{gbcode} for the K-NNs models.
+As for the rest, I use \textbf{Plotly} \cite{plotly} for the nice visual appearance plots and their nice interaction with the user. I use \textbf{e1071} \cite{e1071} for the SVM's models and \textbf{gbcode} \cite{gbcode} for the KNNs models.
 
 Finally, the \textbf{quantmod} \cite{quantmod} package is a quantitative financial modelling framework and can be used for modelling in finance. The function $getSymbols$ of this library is used to download the datasets from the Internet.
 
@@ -811,15 +829,18 @@ So any new model can be included in those functions by following the same struct
 
 \chapter{Results}
 
+In this chapter, one will find the descriptions of the experiments I conducted in order to find the best parameters for each model, i.e.\ the parameters that lead to the smallest errors. After analysing each algorithm on its own, one will find a section comparing and discussing the results of the algorithms between them.
+
+
 \section{Description of my experiments}
 
-I conducted experiments to search for the best SVM parameters to perform forecasting with a search grid. I will compare the averaged MSE and MASE over a rolling window validation as explained in \ref{rwindow}. First I will run the experiments on a reduced history of 6-12 months in order to select the most efficient model. After that, I will use the optimal models on a longer history (e.g. 10-15 years) to evaluate their performance over the long term and see if there is a model that is consistently performing better than the others. 
+I conducted experiments to search for the best parameters of each algorithm to perform forecasting with a search grid. I will compare the averaged MSE and MASE over a rolling window validation as explained in \ref{rwindow}. First I will run the experiments on a reduced history of 6-12 months in order to select the most efficient model. After that, I will use the optimal models on a longer history (e.g. 10-15 years) to evaluate their performance over the long term and see if there is a model that is consistently performing better than the others. 
 
-The experiments will be run on the volatility of the \textit{CAC40} times series. I will use two different proxies for the volatility : the proxy described by equation \ref{volatility} also used in the tool (proxy 1), and the rolling standard deviation with a window of 21 days (proxy 2). All the experiments are run with a window of 21 days and a horizon of 7 days which are values that I found to perform well while using my tool.
+The experiments will be run on the volatility of the \textit{CAC40} times series. I will use two different proxies for the volatility : the proxy described by equation \ref{volatility} also used in the tool (proxy 1), and the rolling standard deviation with a window of 21 days (proxy 2). It will be interesting to see if the smoothness of proxy 2 has any positive effects for forecasting, or if daily volatility has more benefits. All the experiments are run with a window of 21 days and a horizon of 7 days which are values that I found to perform well while using my tool.
 
-I made preliminary analysis by testing the SVM parameters with the tool I developed in order to better lead my grid searches. Therefore, not all results will be displayed with the same disparity.
+I made a preliminary analysis by testing the SVM parameters with the tool I developed in order to better lead my grid searches. Therefore, not all results will be displayed with the same granularity.
 
-Concerning the search grid process, searching through exponentially growing sequences of $C$ and $\gamma$, such as powers of 2, is a practical method to identify good parameters. \cite{Hsu}
+Concerning the search grid process of SVM parameters, searching through exponentially growing sequences of $C$ and $\gamma$, such as powers of 2, is a practical method to identify good parameters. \cite{Hsu}
 
 
 \subsection{Reduced history}
@@ -847,85 +868,26 @@ I first ran the experiment on a 9 months history. One will find on figure \ref{f
 \end{figure}
 
 
-The results of the search grid can be visualised on the heat maps on figure \ref{fig:heat6m} where the resulting errors are displayed according to the parameters. The complete numeric results of the search grid can be found in appendix \ref{6mapp}. As on can see on the heat map, the most optimal cost and gamma parameters seem to be inversely proportional because the darkest squares form a diagonal. This is an indication of how one should use those parameters.
+The results of the search grid for the SVM parameters can be visualised on the heat maps on figure \ref{fig:heat6m} where the resulting errors are displayed according to the parameters. The complete numeric results of the search grid can be found in appendix \ref{6mapp}. 
 
-Then on figure \ref{fig:table6m}, one will find, for each proxy, the results of the experiments expressed as the cost and gamma that lead to the smallest related error measure.
+As on can see on the heat map, the most optimal cost and gamma parameters seem to lie on a diagonal. This is an indication of how one should use those parameters. The heat maps for the proxy 1 required a special scaling because the values are much smaller than with the proxy 2 as one could see on figure \ref{fig:plot6m}.
 
-
-\begin{figure}[!h]
-\centering
-\makebox[\linewidth]{%
-\begin{subfigure}{.55\linewidth}
-  \centering
-  \includegraphics[width=\linewidth]{img/6mMSEsigma.png}
-  \caption{MSE using proxy 1.}
-  \label{fig:heat1}
-\end{subfigure}%
-\begin{subfigure}{.55\linewidth}
-  \centering
-  \includegraphics[width=\linewidth]{img/6mMSEma.png}
-  \caption{MSE using proxy 2.}
-  \label{fig:heat2}
-\end{subfigure}}
-\makebox[\linewidth]{%
-\begin{subfigure}{.55\linewidth}
-  \centering
-  \includegraphics[width=\linewidth]{img/6mMASEsigma.png}
-  \caption{MASE using proxy 1.}
-  \label{fig:heat3}
-\end{subfigure}%
-\begin{subfigure}{.55\linewidth}
-  \centering
-  \includegraphics[width=\linewidth]{img/6mMASEma.png}
-  \caption{MASE using proxy 2.}
-  \label{fig:heat4}
-\end{subfigure}}
-\caption{Heat maps resulting of the search grid for each error using the two proxies.}
-\label{fig:heat6m}
-\end{figure}
+Then on figures \ref{fig:table6m}, \ref{fig:table6mKnn} and \ref{fig:table6mNaive} in the next subsections, one will find, for each proxy, the results of the experiments for SVM, KNN and the naive method. First, the results will show a table of the parameters that lead to the smallest related error measure, which is the averaged error over the whole rolling window validation process. Below the table, one will find box-plots of all the errors for the best parameters. With the help of the box-plots, one can better imagine the relevancy of the averaged errors. Indeed, in most of the box-plots, we can observe very large outliers absorbing a large part of the mean. As an example, one can see, for the MSE of the SVM results using proxy 2, that the complete box seem to lay under the averaged error because of outliers that are 10 times bigger than normal. By observation on the plots of the time series on figure \ref{fig:plot6m}, we could image that those extreme outliers could be due to the very large peaks of volatility that both proxies show.
 
 
+\input{heatmapsreduced.tex}
 
-\begin{figure}[!h]
-\centering
-\begin{minipage}{\textwidth}
-\begin{minipage}{0.5\textwidth}
-\begin{center}
-\vskip10pt
-   \begin{footnotesize}
-   \begin{tabular}{|c|c|c|}
-   \hline
-   & \multicolumn{2}{|c|}{\textbf{Proxy 1}} \\ \cline{2-3}
-   & \textbf{MSE} & \textbf{MASE}          \\ \hline
-   Cost  & $2$            & $256$          \\ 
-   Gamma & $0.0001220703$ & $7.629395e-06$ \\ 
-   Error & $5.443549e-10$ & $1.227800$     \\ 
-   \hline
-   \end{tabular}
-   \end{footnotesize}
-\end{center}
-\end{minipage}
-\begin{minipage}{0.5\textwidth}
-\begin{center}
-\vskip12pt
-   \begin{footnotesize}
-   \begin{tabular}{|c|c|c|}
-   \hline
-   & \multicolumn{2}{|c|}{\textbf{Proxy 2}} \\ \cline{2-3}
-   & \textbf{MSE} & \textbf{MASE}          \\ \hline
-   Cost  & $2$      & $8$          \\ 
-   Gamma & $0.0625$ & $0.015625$ \\ 
-   Error & $143.7454$      & $2.742375$     \\ 
-   \hline
-   \end{tabular}
-   \end{footnotesize}
-\end{center}
-\end{minipage}
-\end{minipage}
-\caption{TODO}
-\label{fig:table6m}
-\end{figure}
+\clearpage
+\subsubsection{SVM results}
+\input{resultsreduced.tex}
 
+\clearpage
+\subsubsection{KNN results}
+\input{resultsreducedKnn.tex}
+
+\clearpage
+\subsubsection{Naive results}
+\input{resultsreducedNaive.tex}
 
 
 
@@ -956,87 +918,57 @@ Then, I ran the experiment on a 10 years history. One will find on figure \ref{f
 
 
 
-The results of the search grid can be visualised on the heat maps on figure \ref{fig:heat10y} where the resulting errors are displayed according to the parameters. The complete numeric results of the search grid can be found in appendix \ref{10yapp}. 
-
 Then on figure \ref{fig:table10y}, one will find, for each proxy, the results of the experiments expressed as the cost and gamma that lead to the smallest related error measure.
 
 
-\begin{figure}[!h]
-\centering
-\makebox[\linewidth]{%
-\begin{subfigure}{.55\linewidth}
-  \centering
-  \includegraphics[width=\linewidth]{img/10yMSEsigma.png}
-  \caption{MSE using proxy 1.}
-  \label{fig:heat2.1}
-\end{subfigure}%
-\begin{subfigure}{.55\linewidth}
-  \centering
-  \includegraphics[width=\linewidth]{img/10yMSEma.png}
-  \caption{MSE using proxy 2.}
-  \label{fig:heat2.2}
-\end{subfigure}}
-\makebox[\linewidth]{%
-\begin{subfigure}{.55\linewidth}
-  \centering
-  \includegraphics[width=\linewidth]{img/10yMASEsigma.png}
-  \caption{MASE using proxy 1.}
-  \label{fig:heat2.3}
-\end{subfigure}%
-\begin{subfigure}{.55\linewidth}
-  \centering
-  \includegraphics[width=\linewidth]{img/10yMASEma.png}
-  \caption{MASE using proxy 2.}
-  \label{fig:heat2.4}
-\end{subfigure}}
-\caption{Heat maps resulting of the search grid for each error using the two proxies.}
-\label{fig:heat10y}
-\end{figure}
+The results of the search grid for the SVM parameters can be visualised on the heat maps on figure \ref{fig:heat10y} where the resulting errors are displayed according to the parameters. The complete numeric results of the search grid can be found in appendix \ref{10yapp}. 
 
+In the same way as the reduced history heat maps, on can see on the heat map that the most optimal cost and gamma parameters seem to lie on a diagonal.
 
-\begin{figure}[!h]
-\centering
-\begin{minipage}{\textwidth}
-\begin{minipage}{0.5\textwidth}
-\begin{center}
-\vskip10pt
-   \begin{footnotesize}
-   \begin{tabular}{|c|c|c|}
-   \hline
-   & \multicolumn{2}{|c|}{\textbf{Proxy 1}} \\ \cline{2-3}
-   & \textbf{MSE} & \textbf{MASE}          \\ \hline
-   Cost  & $4$            & $1024$          \\ 
-   Gamma & $0.00390625$ & $0.001953125$ \\ 
-   Error & $1.969437e-09$ & $1.696371$     \\ 
-   \hline
-   \end{tabular}
-   \end{footnotesize}
-\end{center}
-\end{minipage}
-\begin{minipage}{0.5\textwidth}
-\begin{center}
-\vskip12pt
-   \begin{footnotesize}
-   \begin{tabular}{|c|c|c|}
-   \hline
-   & \multicolumn{2}{|c|}{\textbf{Proxy 2}} \\ \cline{2-3}
-   & \textbf{MSE} & \textbf{MASE}          \\ \hline
-   Cost  & $16$      & $512$          \\ 
-   Gamma & $0.03125$ & $0.0004882812$ \\ 
-   Error & $462.2867$      & $7.885050$     \\ 
-   \hline
-   \end{tabular}
-   \end{footnotesize}
-\end{center}
-\end{minipage}
-\end{minipage}
-\caption{TODO}
-\label{fig:table10y}
-\end{figure}
+On figures \ref{fig:table10y}, \ref{fig:table10yKnn} and \ref{fig:table10yNaive} in the next subsections, one will find, for each proxy, the results of the experiments for SVM, KNN and the naive method. The results follow the same structure as those of the reduced history.
 
 
 
+\input{heatmapslonger.tex}
 
+
+\clearpage
+\subsubsection{SVM results}
+\input{resultslonger.tex}
+
+\clearpage
+\subsubsection{KNN results}
+\input{resultslongerKnn.tex}
+
+\clearpage
+\subsubsection{Naive results}
+\input{resultslongerNaive.tex}
+
+
+
+\clearpage
+\subsection{Comparison of results}
+
+
+The first observation that I should point out is that, looking on figures \ref{fig:compare6m} and \ref{fig:compare10y}, regarding the MASE error measure, the proxy 1 is systematically providing much better results and it's not even close. Regarding MSE, we can't make any deductions between the proxies. 
+
+Another observation comes from the fact that we already observed that for SVM, the best parameters lay on a diagonal. The results of the reduced history for proxy 2 are related to the results of the longer history by this rule. However this is not the case for proxy 1, where results seem to lay on a parallel diagonal, meaning that we couldn't extrapolate short term observations for making long term decisions.
+
+This seems not to be the case for KNN, where the values of $K$ are more or less the same for short and long histories for a same proxy. The interesting observation here is that the values of $K$ when using the proxy 2 are very low. It seems that the smoothness of the time series, due to it's moving window standard deviation, make it that to predict a value, the best options is to look at the very last points.
+
+
+\input{reducedhistorycomp.tex}
+
+\input{longhistorycomp.tex}
+
+
+Now that we have all the results for the optimal parameters of the models, it's time to compare the models between them. For that, we should look at the results of the longer history, on figure \ref{fig:compare10y}, which is more representative. 
+
+With proxy 1, SVM is the best model by far regarding MSE, but it lays slightly behind KNN regarding MASE. 
+
+With proxy 2, regarding MSE, KNN looks like it is performing quite better than SVM ($\sim 16\%$ better) but if we look at the box-plots of those results, we can see that the median of SVM is below 100 with outliers above scores of 2500, so in reality the results are pretty close and might be slightly favourable to SVM. On the other hand, SVM is closely ahead of KNN regarding MASE.
+
+All in all, the SVM and KNN models outperformed the naive model at any point.
 
 
 
@@ -1056,24 +988,24 @@ Then on figure \ref{fig:table10y}, one will find, for each proxy, the results of
 \appendix
 \chapter{Search grid on reduced history}\label{6mapp}
 
-\input{proxy1MSE6M.tex}
+\input{appendix/proxy1MSE6M.tex}
 
-\input{proxy1MASE6M.tex}
+\input{appendix/proxy1MASE6M.tex}
 
-\input{proxy2MSE6M.tex}
+\input{appendix/proxy2MSE6M.tex}
 
-\input{proxy2MASE6M.tex}
+\input{appendix/proxy2MASE6M.tex}
 
 
 \chapter{Search grid on longer history}\label{10yapp}
 
-\input{proxy1MSE10y.tex}
+\input{appendix/proxy1MSE10y.tex}
 
-\input{proxy1MASE10y.tex}
+\input{appendix/proxy1MASE10y.tex}
 
-\input{proxy2MSE10y.tex}
+\input{appendix/proxy2MSE10y.tex}
 
-\input{proxy2MASE10y.tex}
+\input{appendix/proxy2MASE10y.tex}
 
 
 

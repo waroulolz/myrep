@@ -50,6 +50,6 @@ modelSelectionKNN <- function(ts,horizon,splitting_point,embedding=3,Kmin=5,min_
   # Compare the forecast to determine the optimal model
   error_measures.vector <- apply(forecasts.matrix,1,function(forecast){error_measure(ts.future,forecast)})
   best_forecasts <- forecasts.matrix[which.min(error_measures.vector),]
-  
-  return(list(forecasts=best_forecasts,min_error=min(error_measures.vector)))
+  best_k <- c(min_C:max_C)[which.min(error_measures.vector)]
+  return(list(forecasts=best_forecasts,min_error=min(error_measures.vector), best_k = best_k))
 }

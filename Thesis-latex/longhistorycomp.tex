@@ -1,0 +1,39 @@
+\begin{figure}[!h]
+\centering
+\begin{minipage}{\textwidth}
+\begin{minipage}{0.5\textwidth}
+\begin{center}
+\vskip10pt
+   \begin{footnotesize}
+   \begin{tabular}{|c|c|c|}
+   \hline
+   & \multicolumn{2}{|c|}{\textbf{Proxy 1}} \\ \cline{2-3}
+   & \textbf{MSE} & \textbf{MASE}          \\ \hline
+   SVM  & $1.969437e-09$ & $1.696371$         \\ 
+   KNN & $2.929323e-09$ & $1.679673$ \\ 
+   Naive & $4.443686e-09$ & $2.821883$     \\ 
+   \hline
+   \end{tabular}
+   \end{footnotesize}
+\end{center}
+\end{minipage}
+\begin{minipage}{0.5\textwidth}
+\begin{center}
+\vskip12pt
+   \begin{footnotesize}
+   \begin{tabular}{|c|c|c|}
+   \hline
+   & \multicolumn{2}{|c|}{\textbf{Proxy 2}} \\ \cline{2-3}
+   & \textbf{MSE} & \textbf{MASE}          \\ \hline
+   SVM  & $462.2867$      & $7.885050$         \\ 
+   KNN & $388.4074$      & $8.400853$ \\ 
+   NAIVE & $1213.68939$      & $25.98904$      \\ 
+   \hline
+   \end{tabular}
+   \end{footnotesize}
+\end{center}
+\end{minipage}
+\end{minipage}
+\caption{Comparison of the results between the models for the longer history.}
+\label{fig:compare10y}
+\end{figure}
