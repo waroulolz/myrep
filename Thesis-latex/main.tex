@@ -107,20 +107,21 @@
 Financial time series analysis drew significant attention in recent years. Traders, investors, markets analysts, even anyone who follows the stock markets are all interested in a better understanding of price fluctuations. With all the medias and high-tech information constantly available, the stock prices can radically change from a day to another. 
 The risks associated to falling prices are real and traders have to cope with them daily. A better understanding of stock prices behaviour would help traders to make decisions. This explains the consequent interest increase in accurate forecasting of future fluctuations.
 
-The forecasting domain has largely been covered by linear statistical methods such as : ARIMA, GARCH... However, financial time series are often nonlinear and therefore those methods do not apply. Some nonlinear methods have been studied, but they have not been pushed as far as the linear ones described before. Furthermore, generally in order to work, statistical methods requires that the data meet some assumptions. On the other hand, machine learning is able to find patterns in data even without knowing the structure of it. 
+The forecasting domain has largely been covered by linear statistical methods such as : ARIMA, GARCH... However, financial time series are often nonlinear and those methods are not able
+to capture the non-linearity of the financial time series. Some nonlinear methods have been studied, but they haven't been analysed as deeply as the linear ones described before. Furthermore, generally in order to work, statistical methods requires that the data meet some assumptions, such as requiring stationary series,... On the other hand, machine learning is able to find patterns in data even without knowing the structure of it. 
 
 Machine learning might therefore be more adequate to the forecasting of those series. Machine learning is booming and yet has proven to be high performing. Also, the huge increase of the available data makes it too large for traditional analytics. Therefore machine learning is a more suitable choice.
 
-This master's thesis will focus on using machine learning techniques to be able to forecast the future of financial time series. In particular, my goal is to position the support vector machine algorithm's performance compared to more established algorithms for financial time series.
+The aim of my work is twofold. On one hand I will focus on using machine learning techniques to forecast the future of financial time series. In particular, my goal is to compare the support vector machine algorithm's performance to more established algorithms for financial time series.
 
-In addition to scientific research, another goal is the development of an autonomous analysis tool to perform and compare multiple machine learning algorithms on financial times series. All the methodology will be put into a tool that can be used without even knowing anything about machine learning.
+On the other hand, the second objective is the development of an autonomous analysis tool to perform and compare multiple machine learning algorithms on financial times series. All the techniques described in the methodology section will be put into a tool that can be used without any prior knowledge about machine learning.
 
-One will find in this document an overview of the state of art concerning financial time series. First there will a quick reminder of fundamentals and basic definitions. After that, a whole chapter will be dedicated to the methodology and the procedures to follow in order to achieve machine learning forecasting. Next will follow a presentation of the developed tool. Finally, a chapter will be devoted to the results of experiences measuring the machine learning algorithm's performances.
-
-
+One will find in this document an overview of the state of art concerning financial time series in chapter \ref{backgr}. First there will a quick reminder of fundamentals and basic definitions. After that, chapter \ref{methodo} will be dedicated to the methodology and the procedures to follow in order to achieve machine learning forecasting. Next will follow a presentation of the developed tool in chapter \ref{tool}. Finally, chapter \ref{results} will be devoted to the results of experiences measuring the machine learning algorithm's performances.
 
 
-\chapter{Background}
+
+
+\chapter{Background} \label{backgr}
 
 In this chapter, I'll review the basics of the prediction of time series in order to have a brief introduction to machine learning. Therefore this chapter will be a quick reminder of fundamentals alongside some formal basic definitions. 
 
@@ -135,7 +136,7 @@ The efficient-market hypothesis (EMH) states that stock prices fully reflect all
 \end{center}
 
 
-The question if the market is truly unbeatable still didn't reach any consensus. So while it is still only a theory, it is important to have an overview of the subject. 
+The question if the market is truly unbeatable still didn't reach any consensus. So while it is still only a theory, it is important to have an overview of the subject. \cite{emh}
 
 
 \section{Definitions}
@@ -153,7 +154,7 @@ A very well known quote from \textit{Tom Mitchell} defines machine learning as :
 \vspace*{\fill}
 
 
-Machine learning is helpful when there is a need of understanding a time series behaviour to make predictions on it, even if nothing is known about the nature of the time series. There exists different types of learning algorithms and some of them will be discussed in section \ref{MLalgs}.
+Machine learning is helpful when there is a need of understanding a time series behaviour to make predictions on it, even if nothing is known about the nature of the time series. There exist different types of learning algorithms and some of them will be discussed in section \ref{MLalgs}.
 
 
 \subsection{Time series}
@@ -182,9 +183,9 @@ A time series is a finite sequence of $n$ data points $Y_{t}$ $\epsilon$ $\Re$ o
 
 One of the biggest interests of studying time series is forecasting. Indeed, based on the previous observations of a time series $Y_{1},...,Y_{n}$, could we predict the future observations  $Y_{n+1}, Y_{n+2},...$? 
 
-It is possible under the strong assumption that a dependecy between the past and the future exists. The challenge is to find the \textit{\textbf{model}} that describes the best the pattern of the time series.
+It is possible under the strong assumption that a dependency between the past and the future exists. The challenge is to find the \textit{\textbf{model}} that describes the best the pattern of the time series.
 
-Forecasts can be required for short-term, medium-term and long-term purposes. Short-term forecasting is about close in time scheduling and decision making. Medium-term forecasting helps to determine future resource requirements. And long-term forecasting is used for strategic planning with a long-term horizon. \cite{hyndman}
+Forecasts can be required for short-term, medium-term and long-term purposes. Short-term forecasting is about close in time scheduling and decision making, such as scheduling of tasks, personnel,... Medium-term forecasting helps to determine future resource requirements, such as hiring personnel, acquiring needed knowledge to handle particular tasks,... Finally, long-term forecasting is used for strategic planning with a long-term horizon. It's often a help to make long-term business decisions for a company. \cite{hyndman}
 
 
 
@@ -192,27 +193,27 @@ Forecasts can be required for short-term, medium-term and long-term purposes. Sh
 
 \section{Stochastic models}
 
-Choosing a model is an important step in time series forecasting. A model's principal function is to describe how the most important \textit{\textbf{features}} of a time series can be combined to form a meaningful prediction. A \textit{\textbf{feature}} is an individual measurable characteristic, a variable. A model should explain how the past interacts with the future and if handling multiple time series, a model should explain how they affect each other. Finally, a model should accurately forecast future values of a time series. \cite{hyndman}
+Choosing a model is an important step in time series forecasting. A model's principal function is to describe how the most important \textit{\textbf{features}} of a time series can be combined to form a meaningful prediction. A \textit{\textbf{feature}} is an individual measurable characteristic, a variable. A model should explain how the past influenced the present and could be used to extrapolate the future. And if handling multiple time series, a model should explain how they affect each other. Finally, a model should accurately forecast future values of a time series. \cite{hyndman}
 
 We will first have a look at traditional stochastic models, such as ARMA and ARCH, that were studied for a very long time. Later, we will compare them with some machine learning algorithms that, in comparison, are still booming.
 
 
 \subsection{ARMA}
 
-ARMA is the main statistical model for univariate linear time series forecasting. ARMA is a combination of auto regressive (AR[p]) and moving average (MA[q]) models. Its general form is : 
+ARMA is the main statistical model for univariate linear time series forecasting. ARMA is a combination of auto regressive (AR[p]) and moving average (MA[q]) models. Auto regressive means that each value from the time series is regressed based on its previous values. Moving average means that the model uses previous forecast errors in a regression-like model. ARMA's general form is : 
 
 \begin{equation}
 Y_{t} = \sum\limits_{i=1}^p \phi_{i} Y_{t-i} +  \sum\limits_{i=1}^q \theta_{i} \epsilon_{t-i} + \epsilon_{t} 
 \end{equation}
 
-where $\phi_{i}$ and $\theta_{i}$ are the constant parameters and $\epsilon_{t}$ are independent errors also called \textit{\textbf{white noise}}. 
+where $\phi_{i}$ and $\theta_{i}$ are the constant parameters and $\epsilon_{t}$ are independent errors also called \textit{\textbf{white noise}}. White noise is a sequence of components with a zero mean, a finite variance and that are uncorrelated.
 
-However, the problem with ARMA is that it requires the time series to be stationary which isn't always the case. Otherwise, when the variance isn't constant, an ARCH model is the better choice. \cite{Holan}
+However, the problem with ARMA is that it requires the time series to be stationary which isn't always the case. A stationary process is a process from which the mean, the variance and it's covariance are constant over time. Otherwise, when the variance isn't constant, an ARCH model is the better choice. \cite{Holan}
 
 
 \subsection{ARCH \& GARCH}
 
-ARCH in an auto regressive (AR) conditional heteroscedastic (CH) model. It is useful when studying financial time series because it illustrates the evolution of high variance changes for short periods of time, also described as volatility clustering. For example, if a market incur a substantial drop, it can alert people to sell their stuff before it drops even more. Therefore we can observe conditional periods of increased variance followed by calmer periods. \cite{Holan}
+ARCH in an auto regressive (AR) conditional heteroscedastic (CH) model. Heteroscedastic means that the variance of a variable isn't constant over a determined amount time. It's useful when studying financial time series because it illustrates the evolution of high variance changes for short periods of time, also described as volatility clustering. For example, if a market incur a substantial drop, it can alert people to sell their stuff before it drops even more. Therefore we can observe conditional periods of increased variance followed by calmer periods. \cite{Holan}
 
 So, if we use ARCH as an auto regressive model of the variance of the series $y_t$ with zero mean, we can write the ARCH(q) model as : 
 \begin{equation}\label{eq:arch}
@@ -242,12 +243,12 @@ Volatility is a vague notion and an unobservable variable. It can be interpreted
 
 While GARCH models are known to be very well suited for volatility forecasting as we have seen, I'll try to show through this thesis the capabilities of machine learning in that domain.
 
-Note that volatility forecasting is directly linked with multi-step-ahead forecasting here. Indeed, knowing the risk degree only one day ahead is not enough for traders to react and take actions on the market. Having an idea of the behaviour of volatility several days in advance is a big deal.
+Note that volatility forecasting is directly linked with multi-step-ahead forecasting here. Indeed, knowing the risk degree only one day ahead is not enough for traders to react and take actions on the market. Having an idea of the behaviour of volatility several days in advance has a great added value for investors.
 
 
 
 
-\chapter{Methodology}
+\chapter{Methodology}\label{methodo}
 
 This chapter is dedicated to the \textit{modus operandi} of machine learning and forecasting. One can have an overall overview of the machine learning procedure on figure \ref{fig:ML}; the main \textit{\textbf{procedures}} are represented on the figure by black rectangles, and the blue ones represent what we have before the corresponding procedures, and what we get after each procedure. We will first have a look at the pre-processing phases. Then we will see the theory behind the models used in the tool. Finally, we will see how to choose a strategy with a model in order to make good predictions and how to quantify their performance.
 
@@ -266,6 +267,12 @@ This chapter is dedicated to the \textit{modus operandi} of machine learning and
 
 One can choose to use the tool to forecast the original data as is, or can choose to forecast the continuously compounded returns or the volatility of the data instead.
 
+
+\subsubsection{Prices (OHLC)}\label{OHLC}
+
+When handling financial time series, a common dataset structure is a composition of : opening, high, low and closing prices (OHLC) and the volumes of the stock for each weekday. The OHLC format is very often used to view stock movements and provides more information for volatility calculations as explained in section \ref{volatility}. The low and high prices are the lowest and highest prices indices for a day and the opening and closing are respectively, the price at the start of the day when the stock market opens and the price when the stock market closes.
+
+
 \subsubsection{Log returns}
 
 Log returns are often more interesting for financial time series because they show an unscaled value comparable with other returns. It is defined as :
@@ -274,7 +281,8 @@ Log returns are often more interesting for financial time series because they sh
 r_{t_i} = \ln\frac{P_{t_i}}{P_{t_{i-1}}}
 \end{equation}
 
-where $P_{t_i}$ defines the price at time $i$.
+where $P_{t_i}$ defines the price at time $i$. The last price when the stock market closes is the better choice for this type of calculations.
+
 
 \subsubsection{Volatility}\label{vol}
 
@@ -300,7 +308,7 @@ Normalisation is often required by some algorithms to ensure convergence and it 
 {x}' = \frac{x - \mu }{\sigma }
 \end{equation}
 
-so that we have a normal dataset. Note that $\mu$, the mean of x, and $\sigma$, it's standard deviation, are calculated only on the training set with which the model will be trained. In this way, we avoid possible biases induced by not supposedly known information.
+so that we have a normal dataset. Note that $\mu$, the mean of x, and $\sigma$, its standard deviation, both are calculated on the training set only with which the model will be trained. In this way, we avoid possible biases induced by not supposedly known information.
 
 
 
@@ -467,7 +475,7 @@ Naive models can be computed in multiple ways. They generally are very simple an
 \hat{y}_t = \frac{1}{k} \sum_{i=0}^{k} y_{t-1-i}
 \end{equation}
 
-where k is fixed to a month, so 30.
+where k I fixed to the number of days in a month.
 
 
 \section{Forecasting strategies}\label{strat}
@@ -576,7 +584,7 @@ We want to find a function that gives us the closest values to the output depend
 
 \subsection{Parametric identification}
 
-The parametric identification selects the parameters that minimises the disparity between the forecasted values and the output. Note that not all models have parametric identification. In the case of the SVM, we search for the values of the cost and gamma parameters that reduce the most the gap between the forecasted values and the real output. For KNN, we have to find $k$ as the number of instances that we take into account to determine similarities with classes. \cite{BenTaieb}
+The parametric identification selects the parameters that minimises the disparity between the forecasted values and the output. Note that not all models have parametric identification. In the case of the SVM, we search for the values of the cost and gamma parameters that reduce the most the gap between the forecasted values and the real output. For KNN, we have to find the number $k$ of instances that we take into account to determine similarities with classes. \cite{BenTaieb}
 
 
 \subsection{Model validation}
@@ -645,7 +653,7 @@ Finally, model selection is the problem of choosing which method to use for a po
 
 
 
-\chapter{Forecasting tool}
+\chapter{Forecasting tool}\label{tool}
 
 As a major contribution for my master's thesis, I developed a web application tool in \textbf{$R$} that offers an easy and fast way to compare different machine learning models, forecasting some financial time series. The tool runs online and allows anyone to choose a financial time series, modify it, apply some machine learning models on it and tuning their parameters. 
 
@@ -718,11 +726,11 @@ Let's have a look at the first tab on figure \ref{fig:tool1} and its components 
 
 
 
-\section{Datasets}\label{OHLC}
+\section{Datasets}
 
 The tool proposes some default datasets such as data from $CAC40$, $S\&P 500$,... These datasets are directly downloaded from $Yahoo!$ $Finance$ and are daily refreshed. The data is publicly available and entirely free.
 
-Each dataset is composed of : dates, opening, high, low and closing prices (OHLC) and the volumes of the stock for each weekday. The OHLC format is very often used to view stock movements and provides more information for volatility calculations as explained in section \ref{volatility}. The low and high prices are the lowest and highest prices indices for a day and the opening and closing are respectively, the price at the start of the day when the stock market opens and the price when the stock market closes.
+Each dataset is composed of : dates, opening, high, low and closing prices (OHLC) and the volumes of the stock for each weekday. 
 
 
 \section{Always up-to-date}
@@ -827,7 +835,7 @@ A special note : the \textbf{Shiny} library handles the fact that if a same func
 So any new model can be included in those functions by following the same structure as the models already present. Nothing else has to be changed.
 
 
-\chapter{Results}
+\chapter{Results}\label{results}
 
 In this chapter, one will find the descriptions of the experiments I conducted in order to find the best parameters for each model, i.e.\ the parameters that lead to the smallest errors. After analysing each algorithm on its own, one will find a section comparing and discussing the results of the algorithms between them.
 
@@ -954,7 +962,7 @@ The first observation that I should point out is that, looking on figures \ref{f
 
 Another observation comes from the fact that we already observed that for SVM, the best parameters lay on a diagonal. The results of the reduced history for proxy 2 are related to the results of the longer history by this rule. However this is not the case for proxy 1, where results seem to lay on a parallel diagonal, meaning that we couldn't extrapolate short term observations for making long term decisions.
 
-This seems not to be the case for KNN, where the values of $K$ are more or less the same for short and long histories for a same proxy. The interesting observation here is that the values of $K$ when using the proxy 2 are very low. It seems that the smoothness of the time series, due to it's moving window standard deviation, make it that to predict a value, the best options is to look at the very last points.
+For KNN, the values of $K$ are more or less the same for short and long histories for a same proxy. The interesting observation here is that the values of $K$ when using the proxy 2 are very low. It seems that the smoothness of the time series, due to its moving window standard deviation, make it that to predict a value, the best options is to look at the very last points, the very nearest neighbors.
 
 
 \input{reducedhistorycomp.tex}
