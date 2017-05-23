@@ -1,0 +1,34 @@
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+\hline
+& \multicolumn{3}{|c|}{\textbf{Proxy 1}} \\ \cline{2-4}
+& \textbf{MSE} & \textbf{NMSE} & \textbf{MASE} \\ \hline
+Cost  &  $2^{-3}$        & $2^{18}$    & $2^{12}$       \\ 
+Gamma &  $2^{-10}$       & $2^{-11}$   & $2^{-10}$      \\ 
+Error &  $2.965806e-09$  & $3.969722$  & $1.716571$     \\ 
+\hline
+\end{tabular}
+
+
+ \begin{figure}[!h]
+\centering
+\makebox[\linewidth]{%
+\begin{subfigure}{.6\linewidth}
+  \centering
+  \includegraphics[width=\linewidth, height = 0.33\textheight]{img/10yMSEsigma.png}
+  \caption{MSE using proxy 1.}
+  \label{fig:heat1a}
+\end{subfigure}%
+\begin{subfigure}{.6\linewidth}
+  \centering
+  \includegraphics[width=\linewidth, height = 0.33\textheight]{img/10yNMSEsigma.png}
+  \caption{NMSE using proxy 1.}
+  \label{fig:heat2a}
+\end{subfigure}}
+  \centering
+  \includegraphics[width=0.65\linewidth, height = 0.35\textheight]{img/10yMASEsigma.png}
+  \caption{MASE using proxy 1.}
+  \label{fig:heat3a}
+\caption{Heat maps resulting of the SVM grid search for each error using proxy 1.}
+\label{fig:heat10yp1}
+\end{figure}\end{center}

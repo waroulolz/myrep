@@ -1,0 +1,18 @@
+\begin{figure}[!h]
+\centering
+\begin{tabular}{|c|c|c|c|}
+\hline
+    & \multicolumn{3}{|c|}{\textbf{Reduced history}} \\ \cline{2-4}
+    & \textbf{MSE} & \textbf{NMSE} & \textbf{MASE}          \\ \hline
+    SVM  & $C = 2$, $\gamma = 2^{-13}$&  $C = 2^9$, $\gamma = 2^{-19}$& $C = 2^8$, $\gamma = 2^{-17}$ \\ 
+    KNN & $15$ &$15$ &$15$         \\ 
+    \hline
+\multicolumn{4}{c}{\textbf{}} \\ \cline{1-4}
+    & \multicolumn{3}{|c|}{\textbf{Longer history}} \\ \cline{2-4}
+    & \textbf{MSE} & \textbf{NMSE} & \textbf{MASE}          \\ \hline
+    SVM  & $C = 2^{-3}$, $\gamma = 2^{-10}$  & $C = 2^{18}$, $\gamma = 2^{-11}$&  $C = 2^{12}$, $\gamma = 2^{-10}$ \\ 
+    KNN & $14$ &$12$ &$12$         \\ \hline
+\end{tabular}
+\caption{Comparison of the results between the models' parameters using proxy 1.}
+\label{fig:comparep1}
+\end{figure}

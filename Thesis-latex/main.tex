@@ -6,6 +6,7 @@
 \usepackage[english]{babel}
 \usepackage{graphicx}
 \usepackage{caption}
+\usepackage{amssymb}
 \usepackage{subcaption}
 \usepackage{rotating}
 \usepackage{multirow}
@@ -78,7 +79,7 @@
 \textbf{\textsc{Département d'Informatique}}
 \vfill{}\vfill{}
 
-\begin{center}{\Huge Machine learning approach for multiple financial time series forecasting}\end{center}{\Huge \par}
+\begin{center}{\Huge Machine learning approach for multi-step-ahead financial time series forecasting}\end{center}{\Huge \par}
 \begin{center}{\large Jérôme Bastogne}\end{center}{\Huge \par}
 \vfill{}\vfill{}
 \includegraphics[keepaspectratio=true,scale=0.9]{img/ulbBlack.pdf}
@@ -104,19 +105,21 @@
 \chapter{Introduction}
 
 
-Financial time series analysis drew significant attention in recent years. Traders, investors, markets analysts, even anyone who follows the stock markets are all interested in a better understanding of price fluctuations. With all the medias and high-tech information constantly available, the stock prices can radically change from a day to another. 
-The risks associated to falling prices are real and traders have to cope with them daily. A better understanding of stock prices behaviour would help traders to make decisions. This explains the consequent interest increase in accurate forecasting of future fluctuations.
+Financial time series analysis drew significant attention in recent years. Traders, investors, markets analysts, anyone following the stock market is interested in a better understanding of price fluctuations. With all the medias and high-tech information constantly available, the stock prices can radically change from a day to another. The risks associated to falling prices are real and traders have to cope with them daily. A better understanding of stock prices behaviour would help traders to make decisions. This explains the consequent interest increase in accurate forecasting of future fluctuations.
 
-The forecasting domain has largely been covered by linear statistical methods such as : ARIMA, GARCH... However, financial time series are often nonlinear and those methods are not able
-to capture the non-linearity of the financial time series. Some nonlinear methods have been studied, but they haven't been analysed as deeply as the linear ones described before. Furthermore, generally in order to work, statistical methods requires that the data meet some assumptions, such as requiring stationary series,... On the other hand, machine learning is able to find patterns in data even without knowing the structure of it. 
+The forecasting domain has largely been covered by linear statistical methods such as : ARIMA, GARCH... \cite{Holan} However, financial time series are often nonlinear and those methods are not able to capture the non-linearity of the financial time series. Some nonlinear methods have been studied, but they haven't been analysed as deeply as the linear ones described before \cite{BenTaieb}. Furthermore, generally in order to work, statistical methods requires that the data meet some assumptions, such as requiring stationary series,... On the other hand, machine learning aims to find patterns in data reducing the amount of assumptions on the process underlying the data.
 
-Machine learning might therefore be more adequate to the forecasting of those series. Machine learning is booming and yet has proven to be high performing. Also, the huge increase of the available data makes it too large for traditional analytics. Therefore machine learning is a more suitable choice.
+Machine learning might therefore be more adequate to the forecasting of those series \cite{citeulike:13778368}. Machine learning is booming and yet has proven to be high performing. Also, the huge increase of the available data makes it too large for traditional analytics. Therefore machine learning is a more suitable choice.
 
-The aim of my work is twofold. On one hand I will focus on using machine learning techniques to forecast the future of financial time series. In particular, my goal is to compare the support vector machine algorithm's performance to more established algorithms for financial time series.
+Multi-step ahead forecasting strategies used in the context of this thesis have been largely inspired by the studies of \textit{Souhaib Ben Taieb} \cite{BenTaieb}. However, the performance of support vector machines for financial time series forecasting has not yet been studied for multi-step ahead forecasting. Therefore this will be one of my main contributions.
 
-On the other hand, the second objective is the development of an autonomous analysis tool to perform and compare multiple machine learning algorithms on financial times series. All the techniques described in the methodology section will be put into a tool that can be used without any prior knowledge about machine learning.
+The aim of my work is twofold. On one hand I will focus on using machine learning techniques to forecast the future of financial time series. In particular, my goal is to compare the support vector machine algorithm's performance to more established algorithms for financial time series. 
 
-One will find in this document an overview of the state of art concerning financial time series in chapter \ref{backgr}. First there will a quick reminder of fundamentals and basic definitions. After that, chapter \ref{methodo} will be dedicated to the methodology and the procedures to follow in order to achieve machine learning forecasting. Next will follow a presentation of the developed tool in chapter \ref{tool}. Finally, chapter \ref{results} will be devoted to the results of experiences measuring the machine learning algorithm's performances.
+Financial time series are known to be highly volatile. Volatility represents a measure of risk that investors have to cope with daily. Reacting defensively to a future risk increase requires some time to take actions and has to be done multiple days ahead. This reports the importance of multi-step ahead forecasting.  This study will cover the analysis of the volatility of financial time series.
+
+On the other hand, the second objective is the development of a visual analysis tool to perform and compare multiple machine learning algorithms on financial times series. All the techniques described in the methodology section will be put into a tool that can be used without any prior knowledge about machine learning. The tool will run online in an autonomous way and its data will be updated continually and automatically. The purpose of the tool is to offer a visual, fast, up-to-date and configurable way to compare forecasting algorithms on financial time series such as $CAC40$, $S\&P 500$,...
+
+One will find in this document an overview of the state of art concerning financial time series in chapter \ref{backgr}. First there will a quick reminder of fundamentals and basic definitions. After that, chapter \ref{methodo} will be dedicated to the methodology and the procedures to follow in order to achieve machine learning forecasting. Next will follow a presentation of the developed tool in chapter \ref{tool}. Finally, chapter \ref{results} will be devoted to experiences measuring the machine learning algorithm's performances and discussions on their results.
 
 
 
@@ -129,10 +132,10 @@ In this chapter, I'll review the basics of the prediction of time series in orde
 
 \section{Efficient Market Hypothesis}
 
-The efficient-market hypothesis (EMH) states that stock prices fully reflect all available information and that prices are immediately corrected by any news. This would mean that the market is unbeatable and therefore, forecasting would be impossible as the main assumption of forecasting is that any information of the past has some incidence on the future. Also some evidence argue against EMH proving that stock market is not efficient. Indeed it wrongly assumes that all investors are always rational. Also, sometimes only a few traders have knowledge of a particular new information jeopardising this theory. However, if this theory would hold, the best possible forecast would only be the addition of noise \cite{aamodt} : 
+The efficient-market hypothesis (EMH) states that stock prices fully reflect all available information and that prices are immediately corrected by any news. This would mean that the market is unbeatable and therefore, forecasting would be impossible as the main assumption of forecasting is that any information of the past has some incidence on the future. Also some evidence argue against EMH proving that stock market is not efficient. Indeed it wrongly assumes that all investors are always rational. Also, sometimes only a few traders have knowledge of a particular new information jeopardising this theory. However, if this theory would hold, the best possible forecast would only be the use of the last observed value \cite{aamodt} : 
 
 \begin{center}
-    $Y_{n+1} = Y_{n} + \epsilon_{n}$
+    $Y_{n+1} = Y_{n}$
 \end{center}
 
 
@@ -185,9 +188,12 @@ One of the biggest interests of studying time series is forecasting. Indeed, bas
 
 It is possible under the strong assumption that a dependency between the past and the future exists. The challenge is to find the \textit{\textbf{model}} that describes the best the pattern of the time series.
 
-Forecasts can be required for short-term, medium-term and long-term purposes. Short-term forecasting is about close in time scheduling and decision making, such as scheduling of tasks, personnel,... Medium-term forecasting helps to determine future resource requirements, such as hiring personnel, acquiring needed knowledge to handle particular tasks,... Finally, long-term forecasting is used for strategic planning with a long-term horizon. It's often a help to make long-term business decisions for a company. \cite{hyndman}
+Forecasts can be required for short-term, medium-term and long-term purposes. Short-term forecasting is about close in time scheduling and decision making, such as scheduling of tasks, personnel,... Medium-term forecasting helps to determine future resource requirements, such as hiring personnel, acquiring needed knowledge to handle particular tasks,... Finally, long-term forecasting is used for strategic planning with a long-term horizon. It is often a help to make long-term business decisions for a company. \cite{hyndman}
 
 
+\section{Stationarity}
+
+A (weak) stationary process is a process from which the mean, the variance and its covariance are constant over time; the distribution of $y_1$, $y_2$,... $y_n$ for each observation of a time series $y$ is independent of $n$. It is often a requirement for models that the time series has to be stationary. If it is not the case, some transformation can be applied to make it stationary. A time series can be made stationary by differencing, detrending or taking the logs or square roots of the time series. \cite{hyndman}
 
 
 
@@ -206,14 +212,18 @@ ARMA is the main statistical model for univariate linear time series forecasting
 Y_{t} = \sum\limits_{i=1}^p \phi_{i} Y_{t-i} +  \sum\limits_{i=1}^q \theta_{i} \epsilon_{t-i} + \epsilon_{t} 
 \end{equation}
 
-where $\phi_{i}$ and $\theta_{i}$ are the constant parameters and $\epsilon_{t}$ are independent errors also called \textit{\textbf{white noise}}. White noise is a sequence of components with a zero mean, a finite variance and that are uncorrelated.
+where $\phi_{i}$ and $\theta_{i}$ are the constant parameters and $\epsilon_{t}$ are independent errors also called \textit{\textbf{white noise}}. White noise is a sequence of uncorrelated components with a zero mean and a finite variance.
 
-However, the problem with ARMA is that it requires the time series to be stationary which isn't always the case. A stationary process is a process from which the mean, the variance and it's covariance are constant over time. Otherwise, when the variance isn't constant, an ARCH model is the better choice. \cite{Holan}
+Regarding ARMA parameters : first, parameters $p$ and $q$ are estimated by looking respectively at the autocorrelation and partial autocorrelation functions. For the $AR(p)$ processes, the partial autocorrelation function becomes zero from lag $p + 1$. For the $MA(q)$ processes, the autocorrelation function becomes zero at lag $q + 1$. These are step of the so called \"Box–Jenkins model estimation\". \cite{boxjenk}
+
+Then, parameters $\phi$ and $\theta$, respectively parameters of $AR$ and $MA$, can be estimated with various such as : Yule-Walker Estimation, Maximum Likelihood Estimation,...
+
+However, the problem with ARMA is that it requires the time series to be stationary which isn't always the case. Otherwise, when the variance isn't constant, an ARCH model is the better choice. \cite{Holan}
 
 
 \subsection{ARCH \& GARCH}
 
-ARCH in an auto regressive (AR) conditional heteroscedastic (CH) model. Heteroscedastic means that the variance of a variable isn't constant over a determined amount time. It's useful when studying financial time series because it illustrates the evolution of high variance changes for short periods of time, also described as volatility clustering. For example, if a market incur a substantial drop, it can alert people to sell their stuff before it drops even more. Therefore we can observe conditional periods of increased variance followed by calmer periods. \cite{Holan}
+ARCH in an auto regressive (AR) conditional heteroscedastic (CH) model. Heteroscedastic means that the variance of a variable isn't constant over a determined interval of time. It is useful when studying financial time series because it illustrates the evolution of high variance changes for short periods of time, also described as volatility clustering. For example, if a market incurs a substantial drop, it can alert people to sell their stock before it drops even more. Therefore we can observe conditional periods of increased variance followed by calmer periods. \cite{Holan}
 
 So, if we use ARCH as an auto regressive model of the variance of the series $y_t$ with zero mean, we can write the ARCH(q) model as : 
 \begin{equation}\label{eq:arch}
@@ -231,17 +241,19 @@ From there, GARCH (generalised ARCH) was introduced by adding moving-average com
 \sigma_t^2 = \alpha_0 + \sum_{j=1}^p\beta_j \sigma_{t-j}^2 + \sum_{k=1}^q\alpha_k y_{t-k}^2 
 \end{equation}
 
-where $ \beta_1,..., \beta_p \geq 0$ and $\alpha_1,...\alpha_q \geq 0$. \cite{Holan}
+where $ \beta_1,..., \beta_p \geq 0$ and $\alpha_1,...\alpha_q \geq 0$. Parameters $p$ and $q$ define the order of the model. \cite{Holan}
+
+
 
 
 
 \section{Volatility}
 
-Volatility defines the amplitude of variations of a time series. It is a key feature for financial time series analysis. Volatility represents a risk measure which is therefore directly related to risk management, a primary task of investors. Financial individuals are vulnerable to time changing volatility that causes uncertainty in risk assessment. 
+Volatility defines the amplitude of variations of a time series. It is a key feature for financial time series analysis. Volatility represents a risk measure which is therefore directly related to risk management, a primary task of investors. Investors are vulnerable to time changing volatility that causes uncertainty in risk assessment. 
 
 Volatility is a vague notion and an unobservable variable. It can be interpreted in multiple ways and therefore it has to be calculated with a proxy of conditional variance. It can either be seen as the standard deviation computed over a moving window of a determined size, it can be computed as the variance between returns, or it can be one of some of the definitions of volatility given by Garman and Klass \cite{garm} which will be described later in section \ref{vol}.
 
-While GARCH models are known to be very well suited for volatility forecasting as we have seen, I'll try to show through this thesis the capabilities of machine learning in that domain.
+While GARCH models are known to be very well suited for volatility forecasting, I'll try to show through this thesis the capabilities of machine learning in that domain.
 
 Note that volatility forecasting is directly linked with multi-step-ahead forecasting here. Indeed, knowing the risk degree only one day ahead is not enough for traders to react and take actions on the market. Having an idea of the behaviour of volatility several days in advance has a great added value for investors.
 
@@ -270,18 +282,26 @@ One can choose to use the tool to forecast the original data as is, or can choos
 
 \subsubsection{Prices (OHLC)}\label{OHLC}
 
-When handling financial time series, a common dataset structure is a composition of : opening, high, low and closing prices (OHLC) and the volumes of the stock for each weekday. The OHLC format is very often used to view stock movements and provides more information for volatility calculations as explained in section \ref{volatility}. The low and high prices are the lowest and highest prices indices for a day and the opening and closing are respectively, the price at the start of the day when the stock market opens and the price when the stock market closes.
+When handling financial time series, a common dataset structure is a composition of : opening, high, low and closing prices (OHLC) and the volumes of the stock for each weekday. The OHLC format is very often used to view stock movements and provides more information for volatility calculations as explained in section \ref{volatility}. The low and high prices are the lowest and highest prices indices for a day and the opening and closing are respectively, the price at the start of the day when the stock market opens and the price when the stock market closes \cite{garm}. On figure \ref{fig:ohlc} we can see an example of OHLC chart of $CAC 40$ taken from $Yahoo!$ $Finance$ \cite{yahoo}. Each vertical bar represents the high and low for each day with on the left horizontal bar, the opening price, and on the right horizontal bar, the closing price. The bars are shown in green if the closing price is higher than the opening one, else red. 
 
 
-\subsubsection{Log returns}
+\begin{figure}[ht]
+  \centering
+    \includegraphics[scale=0.55]{img/ohlc.png}
+  \caption{Open-high-low-close chart (OHLC).  \cite{yahoo}}
+  \label{fig:ohlc}
+\end{figure}
 
-Log returns are often more interesting for financial time series because they show an unscaled value comparable with other returns. It is defined as :
+
+\subsubsection{Log returns}\label{logret}
+
+Log returns are often more interesting for financial time series than the prices as is. Indeed, log returns gives us an unscaled values that are comparable with log returns of other time series. Log returns are defined as :
 
 \begin{equation}
 r_{t_i} = \ln\frac{P_{t_i}}{P_{t_{i-1}}}
 \end{equation}
 
-where $P_{t_i}$ defines the price at time $i$. The last price when the stock market closes is the better choice for this type of calculations.
+where $P_{t_i}$ defines the price at time $i$. 
 
 
 \subsubsection{Volatility}\label{vol}
@@ -297,7 +317,8 @@ c = \ln\frac{P_t^{(c)}}{P_t^{(o)}} \\
 \end{matrix}
 \end{equation}
 
-where $P_t^{(h)}$, $P_t^{(l)}$ and $P_t^{(c)}$ are respectively the high, low and opening prices at time $t$.
+where $P_t^{(h)}$, $P_t^{(l)}$ and $P_t^{(c)}$ are respectively the high, low and opening prices at time $t$. The parameters $u$, $d$ and $c$ represent respectively the normalised high, low and close. The equation \ref{volatility} is a result of a multiple steps to reduce the bias and the variance. First, the authors tried do to take into account the nighttime volatilities by differencing the close and opening prices. After that, they used as another input the information contained in high and low prices. They finally came up to an optimisation problem that led to equation \ref{volatility}. \cite{garm}
+
 
 
 \subsection{Normalisation}
@@ -319,7 +340,7 @@ so that we have a normal dataset. Note that $\mu$, the mean of x, and $\sigma$, 
 
 \subsubsection{Definition}
 
-Support vector machines (SVM) is a supervised learning model that performs classification by constructing an multi-dimensional hyperplane that optimally separates the data into two categories. 
+Support vector machines (SVM) is a supervised learning model that performs classification by constructing an multi-dimensional hyperplane that optimally separates the data into two categories. SVMs can be used for regression by constructing an multi-dimensional hyperplane that minimises the cost function that measures the distance between the data points and the hyperplane.
 
 SVM implements the structural risk minimisation principle which seeks to minimise an upper bound of the generalisation error rather than minimise the training error.
 
@@ -329,12 +350,12 @@ SVM uses linear models to implement nonlinear class boundaries through some nonl
 \begin{figure}[!h]
   \centering
     \includegraphics[scale=0.45]{img/svm.png}
-  \caption{Transformation of the input space into a higher dimensional space with a kernel $\phi$ where the non-linearly separable data can be separated linearly by a hyperplane.}
+  \caption{Transformation of the input space into a higher dimensional space with a kernel $\phi$ where the non-linearly separable data can be separated linearly by a hyperplane. \cite{svmpic}}
   \label{fig:svm}
 \end{figure}
 
 
-The support vectors are defined by the training examples that are closest to the maximum margin hyperplane and the support vector's number of coordinates are defined by the dimension space size. The maximum margin hyperplane gives the maximum separation between the decision classes as shown on figure \ref{fig:svm_linear_sep}. 
+The support vectors are defined by the training examples that are closest to the maximum margin hyperplane and the support vector's number of coordinates are defined by the dimension space size. The margin of a training example is the distance of an example from the separating hyperplane. The maximum margin hyperplane gives the maximum separation between the decision classes as shown on figure \ref{fig:svm_linear_sep}. 
 
 \begin{figure}[!h]
   \centering
@@ -345,7 +366,7 @@ The support vectors are defined by the training examples that are closest to the
 
 Support vector machines can be applied to financial times series as a case of regression (SVR) by performing a linear regression in high dimensional feature spaces (instead of separating classes). They define the \textit{\textbf{loss function}} that ignores errors which are situated within the certain distance of the true value.
 
-The transformation of a space into a higher dimensional space is done via a \textit{\textbf{Kernel}}. Kernel functions have some tuning parameters. Overfitting can be avoided by allowing a small portion of the training data to lie outside the margin thanks to the slack parameter. For financial time series forecasting, a combination of kernels may be used as information can behave from different sources. This introduces the importance of choosing good parameters and the good combination of kernels (kernel selection). \cite{kim}\cite{liwang}\cite{Smola}
+The transformation of a space into a higher dimensional space is done via a \textit{\textbf{Kernel}}. A kernel is a similarity function. Kernel functions have some tuning parameters. Overfitting can be avoided by allowing a small portion of the training data to lie outside the margin thanks to the slack parameter. For financial time series forecasting, a combination of kernels may be used as information can behave from different sources. This introduces the importance of choosing good parameters and the good combination of kernels (kernel selection). \cite{kim}\cite{liwang}\cite{Smola}
 
 
 \subsubsection{Support vector regression theory}
@@ -412,7 +433,7 @@ y_{i} - (\left \langle w, x_{i} \right \rangle + b)\leq \varepsilon + \xi_{i}\\
 $C$\label{cost} is the constant parameter that represents the trade-off between the complexity of the model (i.e. the flatness of $f\left ( x \right )$, regularisation) and the number of regression errors (i.e. values outside the $\varepsilon$ margin, empirical risk). $C$ is called the regularised constant and takes care of avoiding overfitting. The higher $C$ is, the more we approach a hard-margin function and the less we will have misclassified individuals (overfitting).
 
 
-By introducing Lagrange multipliers $\alpha_i \geq 0$, $\alpha_i^*\geq 0$ for each observation $x_i$, we can transform  $f\left ( x \right )$ and access it's dual form which is easier to solve, but also it will help us for the nonlinear cases \cite{Cortes}\cite{Smola} : 
+By introducing Lagrange multipliers $\alpha_i \geq 0$, $\alpha_i^*\geq 0$ for each observation $x_i$, we can transform  $f\left ( x \right )$ and access its dual form which is easier to solve, but also it will help us for the nonlinear cases \cite{Cortes}\cite{Smola} : 
 
 
 \begin{equation}
@@ -456,14 +477,14 @@ As a final note, one should keep in mind that he can combine multiple kernels in
 
 KNN is a local nonlinear classification model that can also be used for regression. KNNs are often referred to as one of the simplest of all machine learning algorithms. Its principle is to find in the training set the input that is the most similar because similar input would have similar outputs. Note that here the input is a vector of points, and the size of the vector is the order of the model. 
 
-Similarity between inputs can be computed with any distance function such as the Euclidean distance ($\sqrt{\sum_i \left (  x_i - y_i \right )^{2}}$). The kNN model output is then given by the mean of the k-nearest neighbors output as follows :
+Similarity between inputs can be computed with any distance function such as the Euclidean distance ($\sqrt{\sum_i \left (  x_i - y_i \right )^{2}}$). The KNN model output is then given by the mean of the k-nearest neighbors output as follows :
 
 
 \begin{equation}
-f\left ( x \right ) = \frac{1}{k}\sum_{x' \in kNN(x) } f\left ( x' \right )
+f\left ( x \right ) = \frac{1}{k}\sum_{x' \in KNN(x) } f\left ( x' \right )
 \end{equation}
 
-where $kNN(x)$ is the set of the k-nearest neighbors of $x$. There also exists a softer version of the k-nearest neighbors algorithm where instead of computing a mean, we compute a weighted average of each neighbor proportionally to their distance, the closer, the higher the weight is. The parameter k defines the bias-variance trade-off of the algorithm. The higher k is, the more samples we take from our training set, the lower the variance and the higher the bias are. In the other case, a small k will lead to overfitting. \cite{navot}
+where $KNN(x)$ is the set of the k-nearest neighbors of $x$. There also exists a softer version of the k-nearest neighbors algorithm where instead of computing a mean, we compute a weighted average of each neighbor proportionally to their distance, the closer, the higher the weight is. The parameter k defines the bias-variance trade-off of the algorithm. The higher k is, the more samples we take from our training set, the lower the variance and the higher the bias are. In the other case, a small k will lead to overfitting. \cite{navot}
 
 
 
@@ -475,7 +496,7 @@ Naive models can be computed in multiple ways. They generally are very simple an
 \hat{y}_t = \frac{1}{k} \sum_{i=0}^{k} y_{t-1-i}
 \end{equation}
 
-where k I fixed to the number of days in a month.
+where k is fixed to the number of days in a month.
 
 
 \section{Forecasting strategies}\label{strat}
@@ -487,36 +508,74 @@ Once we have a prediction model, we need a strategy in order to compute the actu
     \item Multi-step-ahead prediction.
 \end{myitemize}
 
-Supervised learning approaches cover with success one-step-ahead prediction, which is the ability to predict the very next unknown value. However, multi-step-ahead prediction remains quite challenging.  k-step-ahead prediction is the prediction of the next $k$ unknown values of the time series. 
-
-\subsection{Multi-step-ahead strategies}
-
-There exists some strategies for k-step-ahead prediction in the literature which the most common are \cite{Bonte}\cite{taiebonte}:
-
-\begin{itemize}
-    \item \textbf{Recursive approaches} : (also called iterated approaches) we iterate $k$ times with a one-step-ahead predictor. Each time a value $\phi_{t+1}$ is predicted, it is used as input for the next iteration and therefore, errors propagate consequently. Recursive strategies can therefore be biased.
-    \item \textbf{Direct approaches} : we make $k$ direct separate predictions $\phi_{t+h}$ $\vee h \in \left[1, k\right]$ for the next $k$ unknown values, a different forecasting model being used for each horizon. Though, direct approaches makes a conditional independence assumption which may be incorrect to do. It also needs bigger time series than the iterated approach because of iterated generative's nature. Direct strategies have then less inputs in comparison. This leads to high variance for little time series or large horizon forecasting.
-    \item \textbf{MIMO (multi-input multi-output) approaches} : The multi-input multi-output regression model returns a vector of $k$ consecutive predictions $\left\{\phi_{t+1},...,\phi_{t+k}\right\}$ in one step. MIMO mimics the direct approach strategy but preserving the stochastic dependency of the time series. The problem involved with MIMO is that in order to keep that stochastic dependency, all horizons have to be forecasted with the same model structure which can be restrictive. \cite{Bonte}\cite{taiebonte}
-    \item \textbf{Rectify approach} : Rectify is a strategy that takes advantage of the strengths of both recursive and direct strategies. The principle is to first produce the predictions with the recursive strategy with a linear base model. As aforementioned, the results will be biased. Therefore, the second step of the strategy is to rectify the errors by adjusting the predictions with a nonlinear model with the direct strategy. This is supposed to reduce the bias of recursive linear systems. Rectify also proves to decrease variance's forecasts. \cite{BenTaieb}
-\end{itemize}
+Supervised learning approaches cover with success one-step-ahead prediction, which is the ability to predict the very next unknown value. However, multi-step-ahead prediction remains quite challenging.  k-step-ahead prediction is the prediction of the next $k$ unknown values of the time series. The challenges are to maintain low variance and low bias. Most often, strategies offer either one or the other. Figure \ref{fig:biasvariance} pictures the bias-variance trade-off that forecasting strategies have to cope with.
 
 
 \begin{figure}[!h]
   \centering
     \includegraphics[scale=0.5]{img/bias-variance.png}
-  \caption{Fundamental bias-variance trade-off of forecasting strategies.}
+  \caption{Fundamental bias-variance trade-off of forecasting strategies. \cite{biaisvar}}
   \label{fig:biasvariance}
 \end{figure}
 
 
+\subsection{Multi-step-ahead strategies}
 
-\subsubsection{Dataset embeddings for multi-step forecasting}
+There exists some strategies for k-step-ahead prediction in the literature which the most common are described in the following section. \cite{Bonte}\cite{taiebonte}
 
-The strategies described in this section above require the data to be held into a certain data structure. The structures will be described for the strategies used in the tool: the recursive and direct ones. 
+\subsubsection{Recursive Strategy}
 
-Indeed, we want the model to learn how to predict a value $Y$ at time $t$ according to a number past values, so we need to train a model that is able to predict $Y_t$ according to its $k$ past values. The number of $k$ past values, called the order of the model, is fixed beforehand.  
+Also called iterated approaches, we iterate $k$ times with a one-step-ahead predictor. The one-step-ahead model $f$ to predict $y$ at time $t+1$ is first trained as : 
 
-E.g.\ , for the recursive approach, if the order of the model is 4, our model will try to predict $Y_t$ according to  $Y_{t-1}, Y_{t-2}, Y_{t-3}, Y_{t-4}$. Therefore our model is trained by passing a structure as shown on figure \ref{fig:recursive} where each input is a vector of $k$ past values of each input $Y_t$ in the training set, where $k$ is the order of the model, and where the corresponding output is the value $Y_t$. 
+\begin{equation}
+    y_{t + 1} =f(y_t,...,y_{t − e + 1}) + \epsilon_{t + 1}
+\end{equation}
+
+$\vee t \in \left[e,..., N - 1\right]$, where $N$ is the size of the time series and where $e$ is the order of the model as described in section \ref{embeddings}. \cite{souahib2}
+
+Each time a value $y_{t+1}$ is predicted, it is used as input for the next iteration and therefore, errors propagate consequently. Recursive strategies can therefore be consequently biased. \cite{BenTaieb}
+
+
+\subsubsection{Direct Strategy}
+
+We make $k$ direct separate predictions $y_{t+h}$ $\vee h \in \left[1, k\right]$ for the next $k$ unknown values, a different forecasting model being used for each horizon. Individually, $k$ separate models are trained $\vee h \in \left[1, k\right]$ : 
+
+\begin{equation}
+    y_{t + h} = f_h(y_t,...,y_{t − e + 1}) + \epsilon_{t + h}
+\end{equation}
+
+$\vee t \in \left[e,..., N - k\right]$, where $N$ is the size of the time series. \cite{souahib2}
+
+Though, direct approaches makes a conditional independence assumption which may be incorrect to do. It also needs bigger time series than the iterated approach because of iterated generative's nature. Direct strategies have then less inputs in comparison. This leads to high variance for little time series or large horizon forecasting. \cite{BenTaieb}
+
+
+\subsubsection{MIMO (multi-input multi-output) Strategy}
+
+The multi-input multi-output regression model returns a vector of $k$ consecutive predictions $\left\{y_{t+1},..., y_{t+k}\right\}$ in one step. One multi-output model $f$ is trained as :
+
+\begin{equation}
+    \left[y_{t + k},..., y_{t + 1}\right] = f(y_t,...,y_{t − e + 1}) + w
+\end{equation}
+
+$\vee t \in \left[e,..., N - k\right]$ and where $f : \mathbb{R}^d \rightarrow \mathbb{R}^k$ is a vector-valued function and $w \in \mathbb{R}^k$ is a noise vector. \cite{souahib2}
+
+MIMO mimics the direct approach strategy but preserving the stochastic dependency of the time series. The problem involved with MIMO is that in order to keep that stochastic dependency, all horizons have to be forecasted with the same model structure which can be restrictive. \cite{Bonte}\cite{taiebonte}
+    
+    
+\subsubsection{Rectify Strategy}
+
+Rectify is a strategy that takes advantage of the strengths of both recursive and direct strategies. The principle is to first produce the predictions with the recursive strategy with a linear base model. As aforementioned, the results will be biased. Therefore, the second step of the strategy is to rectify the errors by adjusting the predictions with a nonlinear model with the direct strategy. This is supposed to reduce the bias of recursive linear systems. Rectify also proves to decrease variance's forecasts. \cite{BenTaieb}
+
+
+
+
+\subsubsection{Dataset embeddings for multi-step forecasting}\label{embeddings}
+
+The strategies described in this section above require the data to be held into a certain data structure. The structures will be described for the strategies used in the tool : the recursive and direct ones. 
+
+Indeed, we want the model to learn how to predict a value $Y$ at time $t$ according to a number $e$ of past values, so we need to train a model that is able to predict $Y_t$ according to its $e$ past values. The number of $e$ past values, called the order of the model, is fixed beforehand.  
+
+E.g.\ , for the recursive approach, if the order of the model is 4, our model will try to predict $Y_t$ according to  $Y_{t-1}, Y_{t-2}, Y_{t-3}, Y_{t-4}$. Therefore our model is trained by passing a structure as shown on figure \ref{fig:recursive} where each input is a vector of $e$ past values of each input $Y_t$ in the training set, where $e$ is the order of the model, and where the corresponding output is the value $Y_t$. 
  
 
 \begin{figure}[!h]
@@ -584,7 +643,7 @@ We want to find a function that gives us the closest values to the output depend
 
 \subsection{Parametric identification}
 
-The parametric identification selects the parameters that minimises the disparity between the forecasted values and the output. Note that not all models have parametric identification. In the case of the SVM, we search for the values of the cost and gamma parameters that reduce the most the gap between the forecasted values and the real output. For KNN, we have to find the number $k$ of instances that we take into account to determine similarities with classes. \cite{BenTaieb}
+The parametric identification selects the parameters that minimises the disparity between the forecasted values and the output. Note that not all models have parametric identification. In the case of the SVM, we search for the values of the cost and gamma parameters (explained in section \ref{cost}) that reduce the most the gap between the forecasted values and the real output. For KNN, we have to find the number $k$ of instances that we take into account to determine similarities with classes. \cite{BenTaieb}
 
 
 \subsection{Model validation}
@@ -597,7 +656,7 @@ The model validation phase is the process of examining the accuracy of the model
 
 Rather than checking the performance of a model at one point in time, we would like to have a idea of how the model will generally perform. Sometimes we will have very accurate results, and other times the results will be worse, but we would like to have an idea of its general performance.
 
-The principle is to use the model through the whole time series with a rolling window of a fixed size as shown on figure \ref{fig:rolling}. For each window, the data is separated into a training and a testing set. The model is then trained and predictions are made. By comparing those with the actual values in the testing set, we can compute errors and by averaging those over the whole time series. In the end, we get an average of performance indicator.
+The principle is to use the model through the whole time series with a rolling window of a fixed size as shown on figure \ref{fig:rolling}. For each window, the data is separated into a training and a testing set. The model is then trained and predictions are made. By comparing those with the actual values in the testing set, we can compute errors and by averaging those over the whole time series we computed an averaged error. In the end, we get an average of errors that will be our performance indicator.
 
 In the web tool I designed, the minimum size of the window is taken as two-thirds of the dataset and the window is offset by the same value as the horizon.
 
@@ -630,14 +689,20 @@ The errors shown in the tool are listed in the table below  : \\
   Normalized Mean Squared Error & NMSE & $\frac{1}{n}\frac{\sum_{t=0}^{n} (y_t-\hat{y}_t)^2}{var(y_t)}$ \\
   Normalized Naive Mean Squared Error & NNMSE & $\frac{1}{n}\frac{\sum_{t=0}^{n} (y_t-\hat{y}_t)^2}{\sum_{t=0}^{n} (y_t-\hat{y}_{Naive,t})^2}$ \\
   \hline
-\end{tabular}
-\\
+\end{tabular}  
+\begin{flushright}
+    \cite{Hyndman06} 
+    \cite{nmse}
+\end{flushright}
 
 
 
 Remarkable notes : 
 
 \begin{itemize}
+    \item MSE, RMSE and MAE are scale dependent errors.
+    \item MAPE and sMAPE are scale independant errors.
+    \item MASE, NMSE and NNMSE are relative errors.
     \item MAPE is generally used for reporting to outsiders, because it expresses an error in percentages that anyone can imagine and understand.
     \item MASE is often the best performing performance meter because it avoids most of the problems induced by other error measures such as : scale independence, symmetry,... 
     \item NNMSE is a relative error showing how a model is better performing than the naive method. 
@@ -678,11 +743,11 @@ Let's have a look at the first tab on figure \ref{fig:tool1} and its components 
 
 
 \begin{enumerate}
-\item This option allows one to choose a market. The corresponding data will be downloaded from $Yahoo!$ $Finance$. The data is automatically refreshed when needed.
+\item This option allows one to choose a market. The corresponding data will be downloaded from $Yahoo!$ $Finance$ on its web link \url{http://finance.yahoo.com/} \cite{yahoo}. The download of the data is handled by the $quantmod$ package as explained in section \ref{libraries} and the nature of the data is explained in section \ref{datasets}. The data is automatically refreshed by the tool when new data is available.
 \item For each market there are different selectable options such as : the opening, closing, high and low prices and the volume.
-\item Rather than using the raw data, a transformation can be selected among the volatility of the data and the compound returns.
-\item The time series can be cut in time as desired by adjusting the starting date on the left and the end date on the right. This way, one can position his time series himself wherever he wants back in time.
-\item A plot to visualise the data as chosen by all the parameters.
+\item Rather than using the raw data, a transformation can be selected among the compound returns introduced in section \ref{logret} and the volatility of the data defined in section \ref{volatility}.
+\item The time series can be cut in time as desired by adjusting the starting date on the left and the end date on the right. This way, one can position the time series himself wherever he wants back in time.
+\item A plot to visualise the data belonging into the chosen date range and with the chosen transformation options.
 \item A summary of the data showing basic informations like the mean, first and third quartiles,...
 \end{enumerate}
 
@@ -697,12 +762,12 @@ Let's have a look at the first tab on figure \ref{fig:tool1} and its components 
 \end{figure}
 
 \begin{enumerate}
-\item\inlineitem Those are the configurable parameters of the SVM : C, the cost \ref{cost} and $\gamma$, the Gaussian RBF kernel parameter. The Knn algorithm already finds the best parameter for $K$ with a fast automated cross-validation.
-\item The order of the model, i.e.\ the number of days which are used to predict a value $Y$ at time $t$.
-\item The horizon is the number of days we try to predict in multi-step ahead forecasting.
+\item\inlineitem Those are the configurable parameters of the SVM : C, the cost \ref{cost} and $\gamma$ \ref{gamma}, the Gaussian RBF kernel parameter. The Knn algorithm, from the $gbcode$ $R$ package\cite{gbcode}, already finds the best parameter for $K$ with a fast automated cross-validation.
+\item This the order of the model discussed in section \ref{embeddings}, i.e.\ the number of days which are used to predict a value $Y_t$ at time $t$.
+\item The horizon is the number of days we aim to predict in multi-step ahead forecasting.
 \item The strategies are defined in detail in section \ref{strat}.
 \item Those are some options to enable or disable the plotting of the models for a clearer visibility.
-\item This is the resulting plot with its legend. The plot is made with the library \textbf{plotly} that gives a lot of options like zooming, downloading,... The orange dotted line shows the separation between the training set and the test set. Here, we are manually toying with parameters and therefore the line represents the horizon cut, which may be different during model validation.
+\item This is the resulting plot with its legend. The plot is made with the library \textbf{plotly} \cite{plotly} that gives a lot of options like zooming, downloading,... The orange dotted line shows the separation between the training set and the test set. Here, we are manually toying with parameters and therefore the line represents the horizon cut, which may be different during model validation.
 \item This is a short table which resumes the errors of the models, as explained in section \ref{errors}, for the current forecasting. For a more general idea of how a model is usually performing, one should refer to the third and last tab of the web page. 
 \end{enumerate}
 
@@ -720,33 +785,33 @@ Let's have a look at the first tab on figure \ref{fig:tool1} and its components 
 
 \begin{enumerate}
 \item\inlineitem\inlineitem\inlineitem\inlineitem\inlineitem Those are the same parameters as those in the second tab.
-\item This is a table of means of errors. Using the selected parameters, each model is applied through the whole dataset with a rolling window. The errors are averaged for each window over the whole dataset by applying the same model.
+\item This is a table of means of errors. Using the selected parameters, each model is applied through the whole dataset with a rolling window validation. The shown values are the averaged errors for each window as explained in section \ref{rwindow}.
 \end{enumerate}
 
 
 
+\section{Libraries}\label{libraries}
 
-\section{Datasets}
-
-The tool proposes some default datasets such as data from $CAC40$, $S\&P 500$,... These datasets are directly downloaded from $Yahoo!$ $Finance$ and are daily refreshed. The data is publicly available and entirely free.
-
-Each dataset is composed of : dates, opening, high, low and closing prices (OHLC) and the volumes of the stock for each weekday. 
-
-
-\section{Always up-to-date}
-
-The tool ensures that the data is automatically refreshed when new data is available. When new data is downloaded, the models are also automatically updated with the new data without having to do anything. This is an important feature of the tool because it really shows its independence. The tool acts like a standalone app that constantly provides up-to-date information. 
-
-
-\section{Libraries}
-
-The tool is written in \textbf{$R$} \cite{R} and it's web client-server part is mostly handled by a library called \textbf{Shiny} \cite{Shiny}.
+The tool is written in \textbf{$R$} \cite{R} and its web client-server part is mostly handled by a library called \textbf{Shiny} \cite{Shiny}.
 
 \textbf{Shiny} is a library that proposes a web application framework that handles everything, including client-server, on itself. It allows one to only care about the functionalities of the code and the library will take care of how things are updated on the client part, how the client interacts with the server, ...
 
 As for the rest, I use \textbf{Plotly} \cite{plotly} for the nice visual appearance plots and their nice interaction with the user. I use \textbf{e1071} \cite{e1071} for the SVM's models and \textbf{gbcode} \cite{gbcode} for the KNNs models.
 
 Finally, the \textbf{quantmod} \cite{quantmod} package is a quantitative financial modelling framework and can be used for modelling in finance. The function $getSymbols$ of this library is used to download the datasets from the Internet.
+
+
+
+\section{Datasets}\label{datasets}
+
+The tool proposes some default datasets such as data from $CAC40$, $S\&P 500$,... These datasets are directly downloaded from $Yahoo!$ $Finance$ on its web link \url{http://finance.yahoo.com/} \cite{yahoo} and are daily refreshed. The data is publicly available and entirely free. 
+
+Each dataset is composed of : dates, opening, high, low and closing prices (OHLC) and the volumes of the stock for each weekday. Data is available with a daily granularity and without any delay.
+
+
+\section{Updates itself automatically}
+
+The tool ensures that the data is automatically refreshed when new data is available. This is handled by the \textbf{Shiny} interface which is very reactive in its conception and acts in the same manner as the well known $Observer$ pattern. Indeed, \textbf{Shiny} gets notified when a reactive variables, i.e.\ $observable$ variables, are modified. The trick here is to invalidate the data set, which is a function that forces \textbf{Shiny} to react as if the data set was modified in order to trigger the update function. \textbf{Shiny} offers a built-in invalidation function associated with a timer that can be parametrised. When new data is downloaded, the models are also automatically updated with the new data without having to do anything. This is an important feature of the tool because it really shows its autonomy. The tool acts like a standalone app that constantly provides up-to-date information. 
 
 
 \section{Code}
@@ -762,7 +827,7 @@ The rest of this section contains more information on how one could tweak the co
 
 \subsection{Add new datasets}
 
-To add a new dataset, one has to find the tag reference of the market on $Yahoo!$ $Finance$ and add it to the configuration file following the same pattern as those already added; see the content of the configration file below : 
+To add a new dataset, one has to find the tag reference of the market on $Yahoo!$ $Finance$ (can be found on \url{http://finance.yahoo.com/} \cite{yahoo}) and add it to the configuration file following the same pattern as those already added; see the content of the configuration file below : 
 
 
 \begin{lstlisting}
@@ -775,14 +840,18 @@ where the $markets$ are the tags, and the $names(markets)$ are the names display
 
 \subsection{Add new models}
 
-To add a new model, one can make a new function that takes in input a dataframe, a horizon and more parameters, and that returns the final predictions as a list of values. As an example, below is the header of the function that computes the predictions with SVM : \\
+To add a new model, one can make a new function that takes in input a dataframe, a horizon and more parameters, and that returns the final predictions as a list of values. As an example, below is the header of new dummy predictor that shows all the required functionalities a new model function should contain : \\
 
 
 \begin{lstlisting}
-svmForecast <- function(df, horizon, window, gamma = 1/window, 
-                            cost = 1, strategy = "recursive"){
+modelNameForecast <- function(df, horizon, window, strategy, 
+                                    parameter1, parameter2){
+        # df is a dataframe
+        # horizon and window are the multi-step-ahead parameters
+        # strategy is either recursive or direct
+        # the rest are specific model parameters
     ...
-    return predictedY
+    return predictedY # the function returns a vector of predicted values
 }
 \end{lstlisting}
 
@@ -828,32 +897,36 @@ output$predTable <- renderTable(rownames = TRUE, bordered = TRUE, {
   })
 \end{lstlisting}  
   
-As one can see, the code is just about forecasting values with each model and compute the errors with the actual values. Adding a new model here is about adding a call to the model and adding the predictions to the errors computations. The function \textit{errorTable} is nearly the same. Note: the $getErrors()$ function doesn't exists but it represents the actual computations of the table that in reality takes too much place as the table is very big. 
+As one can see, the code is just about forecasting values with each model and compute the errors with the actual values. Adding a new model here is about adding a call to the model and adding the predictions to the errors computations. The function \textit{errorTable} is nearly the same.
 
-A special note : the \textbf{Shiny} library handles the fact that if a same function is called for multiple outputs, it is only computed once and the same results are returned for each output. Therefore, we can call \textit{svmForecast} for the plotting and the errors computations without doing over-computations because internally, \textbf{Shiny} handles it all and will update the results automatically if any of the parameters is changed.
+A special note : the \textbf{Shiny} library handles the fact that if the same function is called for multiple outputs, it is only computed once and the same results are returned for each output. Therefore, we can call \textit{svmForecast} for the plotting and the errors computations without doing over-computations because internally, \textbf{Shiny} handles it all and will update the results automatically if any of the parameters is changed.
 
 So any new model can be included in those functions by following the same structure as the models already present. Nothing else has to be changed.
 
 
 \chapter{Results}\label{results}
 
-In this chapter, one will find the descriptions of the experiments I conducted in order to find the best parameters for each model, i.e.\ the parameters that lead to the smallest errors. After analysing each algorithm on its own, one will find a section comparing and discussing the results of the algorithms between them.
+In this chapter, one will find the descriptions of the experiments I conducted in order to identify the best parameters for each model, i.e.\ the parameters that lead to the smallest errors. After exploring experiments' results, one will find a section comparing and discussing the results of the algorithms between them.
 
 
 \section{Description of my experiments}
 
-I conducted experiments to search for the best parameters of each algorithm to perform forecasting with a search grid. I will compare the averaged MSE and MASE over a rolling window validation as explained in \ref{rwindow}. First I will run the experiments on a reduced history of 6-12 months in order to select the most efficient model. After that, I will use the optimal models on a longer history (e.g. 10-15 years) to evaluate their performance over the long term and see if there is a model that is consistently performing better than the others. 
 
-The experiments will be run on the volatility of the \textit{CAC40} times series. I will use two different proxies for the volatility : the proxy described by equation \ref{volatility} also used in the tool (proxy 1), and the rolling standard deviation with a window of 21 days (proxy 2). It will be interesting to see if the smoothness of proxy 2 has any positive effects for forecasting, or if daily volatility has more benefits. All the experiments are run with a window of 21 days and a horizon of 7 days which are values that I found to perform well while using my tool.
+I will conduct experiments to see which algorithms work best for the prediction task. I will grid search for the best parameters of each algorithm to perform forecasting. I will compare the averaged MSE, NMSE and MASE over a rolling window validation as explained in \ref{rwindow}. First I will run the experiments on a reduced history of 9 months in order to quickly select the most efficient model. After that, I will run the same experiments on a longer history of 10 years to evaluate the performance of the optimal models over the long term and see if there is a model that is consistently performing better than the others.
 
-I made a preliminary analysis by testing the SVM parameters with the tool I developed in order to better lead my grid searches. Therefore, not all results will be displayed with the same granularity.
+The experiments will be run on the volatility of the \textit{CAC40} times series. I will use two different proxies for the volatility : the proxy described by equation \ref{volatility} also used in the tool (proxy 1), and the rolling standard deviation with a window of 21 days (proxy 2). It will be interesting to see if the smoothness of proxy 2 has any positive effects for forecasting, or if daily volatility has more benefits. All the experiments will be run with a window of 21 days and a horizon of 7 days which are values that I found to perform well while using my tool.
 
-Concerning the search grid process of SVM parameters, searching through exponentially growing sequences of $C$ and $\gamma$, such as powers of 2, is a practical method to identify good parameters. \cite{Hsu}
+I made preliminary analyses by testing the SVM parameters with the tool I developed in order to better lead my grid searches. Therefore, not all results will be displayed with the same granularity.
+
+Concerning the search grid process of SVM parameters, searching through exponentially growing sequences, such as powers of 2, for $C$ and $\gamma$ is a practical method to identify good parameters. \cite{Hsu}
+
+The structure of the rest of this chapter is divided as follows : first are shown the results for the reduced history before the longer one. For each history, the results are divided between first proxy 1, then proxy 2. Each proxy section shows first the results of the SVM search grid. Then will be displayed, for each error measure (MSE, NMSE, MASE), the results with the best parameters. Finally, a discussion of the results will end the chapter.
 
 
-\subsection{Reduced history}
 
-I first ran the experiment on a 9 months history. One will find on figure \ref{fig:plot6m} the plots of the time series with the applied proxies.
+\section{Reduced history}
+
+I first ran the experiment on a 9 months history. On figure \ref{fig:plot6m}, one can observe the plots of the time series with the applied proxies.
 
 
 \begin{figure}[!h]
@@ -876,31 +949,35 @@ I first ran the experiment on a 9 months history. One will find on figure \ref{f
 \end{figure}
 
 
-The results of the search grid for the SVM parameters can be visualised on the heat maps on figure \ref{fig:heat6m} where the resulting errors are displayed according to the parameters. The complete numeric results of the search grid can be found in appendix \ref{6mapp}. 
+One will find in the rest of this section, first the results using proxy 1, then the results using proxy 2.
 
-As on can see on the heat map, the most optimal cost and gamma parameters seem to lie on a diagonal. This is an indication of how one should use those parameters. The heat maps for the proxy 1 required a special scaling because the values are much smaller than with the proxy 2 as one could see on figure \ref{fig:plot6m}.
+The results of the search grid for the SVM parameters can be visualised on the heat maps on figure \ref{fig:heat6mp1} for proxy 1, and \ref{fig:heat6mp2} for proxy 2, where the resulting errors are displayed according to the parameters. The complete numeric results of the search grids can be found in appendix \ref{6mapp}. On the heat maps, the abscissa shows the different values for $\gamma$ and the ordinate shows the different values for $C$, the cost. The scales are not the same for all heat maps, they are rather zoomed in the interesting zones. On the right of each heat map stands a vertical bar mapping colors with values in order to distinguish between error scales. The minimum errors colors are located on the bottom of the bar.
 
-Then on figures \ref{fig:table6m}, \ref{fig:table6mKnn} and \ref{fig:table6mNaive} in the next subsections, one will find, for each proxy, the results of the experiments for SVM, KNN and the naive method. First, the results will show a table of the parameters that lead to the smallest related error measure, which is the averaged error over the whole rolling window validation process. Below the table, one will find box-plots of all the errors for the best parameters. With the help of the box-plots, one can better imagine the relevancy of the averaged errors. Indeed, in most of the box-plots, we can observe very large outliers absorbing a large part of the mean. As an example, one can see, for the MSE of the SVM results using proxy 2, that the complete box seem to lay under the averaged error because of outliers that are 10 times bigger than normal. By observation on the plots of the time series on figure \ref{fig:plot6m}, we could image that those extreme outliers could be due to the very large peaks of volatility that both proxies show.
+As on can see on the heat maps, the most optimal cost and gamma parameters seem to lie on a diagonal. This is an indication of how one should use those parameters.
 
-
-\input{heatmapsreduced.tex}
-
-\clearpage
-\subsubsection{SVM results}
-\input{resultsreduced.tex}
-
-\clearpage
-\subsubsection{KNN results}
-\input{resultsreducedKnn.tex}
-
-\clearpage
-\subsubsection{Naive results}
-\input{resultsreducedNaive.tex}
+Then, for each proxy, one will find the results of the experiments for SVM, KNN and the naive method regrouped for each error measure. First, the results will show a table of the parameters that lead to the smallest related error measure, which is the averaged error over the whole rolling window validation process. Below the table, one will find box-plots of all the errors for the best parameters. Bear in mind that outliers are not shown on the box-plots. With the help of those plots, one can better imagine the relevancy of the averaged errors.
 
 
 
 \clearpage
-\subsection{Longer history}
+\subsection{Proxy 1 results}
+\input{heatmapsreducedp1.tex}
+
+\clearpage
+\input{resultsreducedproxy1.tex}
+
+
+\clearpage
+\subsection{Proxy 2 results}
+\input{heatmapsreducedp2.tex}
+
+\clearpage
+\input{resultsreducedproxy2.tex}
+
+
+
+\clearpage
+\section{Longer history}
 
 Then, I ran the experiment on a 10 years history. One will find on figure \ref{fig:plot10y} the plots of the time series with the applied proxies.
 
@@ -925,58 +1002,73 @@ Then, I ran the experiment on a 10 years history. One will find on figure \ref{f
 \end{figure}
 
 
+One will find in the rest of this section, first the results using proxy 1, then the results using proxy 2.
 
-Then on figure \ref{fig:table10y}, one will find, for each proxy, the results of the experiments expressed as the cost and gamma that lead to the smallest related error measure.
+The results of the search grid for the SVM parameters can be visualised on the heat maps on figure \ref{fig:heat10yp1} for proxy 1, and \ref{fig:heat10yp2} for proxy 2, where the resulting errors are displayed according to the parameters. The complete numeric results of the search grids can be found in appendix \ref{10yapp}. 
 
+In the same way as for the reduced history heat maps, one can see on the heat maps that the most optimal cost and gamma parameters seem to lie on a diagonal.
 
-The results of the search grid for the SVM parameters can be visualised on the heat maps on figure \ref{fig:heat10y} where the resulting errors are displayed according to the parameters. The complete numeric results of the search grid can be found in appendix \ref{10yapp}. 
+Then, for each proxy, one will find the results of the experiments for SVM, KNN and the naive method regrouped for each error measure.
 
-In the same way as the reduced history heat maps, on can see on the heat map that the most optimal cost and gamma parameters seem to lie on a diagonal.
-
-On figures \ref{fig:table10y}, \ref{fig:table10yKnn} and \ref{fig:table10yNaive} in the next subsections, one will find, for each proxy, the results of the experiments for SVM, KNN and the naive method. The results follow the same structure as those of the reduced history.
-
-
-
-\input{heatmapslonger.tex}
-
-
-\clearpage
-\subsubsection{SVM results}
-\input{resultslonger.tex}
-
-\clearpage
-\subsubsection{KNN results}
-\input{resultslongerKnn.tex}
-
-\clearpage
-\subsubsection{Naive results}
-\input{resultslongerNaive.tex}
+The results follow the same structure as those of the reduced history.
 
 
 
 \clearpage
-\subsection{Comparison of results}
+\input{heatmapslongerp1.tex}
+
+\clearpage
+\subsection{Proxy 1 results}
+\input{resultslongerproxy1.tex}
 
 
-The first observation that I should point out is that, looking on figures \ref{fig:compare6m} and \ref{fig:compare10y}, regarding the MASE error measure, the proxy 1 is systematically providing much better results and it's not even close. Regarding MSE, we can't make any deductions between the proxies. 
+\clearpage
+\input{heatmapslongerp2.tex}
 
-Another observation comes from the fact that we already observed that for SVM, the best parameters lay on a diagonal. The results of the reduced history for proxy 2 are related to the results of the longer history by this rule. However this is not the case for proxy 1, where results seem to lay on a parallel diagonal, meaning that we couldn't extrapolate short term observations for making long term decisions.
+\clearpage
+\subsection{Proxy 2 results}
+\input{resultslongerproxy2.tex}
 
-For KNN, the values of $K$ are more or less the same for short and long histories for a same proxy. The interesting observation here is that the values of $K$ when using the proxy 2 are very low. It seems that the smoothness of the time series, due to its moving window standard deviation, make it that to predict a value, the best options is to look at the very last points, the very nearest neighbors.
 
+
+\clearpage
+\section{Discussion}
+
+
+First we will have a look at the optimal parameters for each algorithm, proxy and history length. We will try to see if there is any tendency or if any parameters are constant regardless of the proxy,... Then we will compare the actual errors measures for each algorithm to see if there's one that is constantly performing better than the others.
+
+\subsection{Optimal parameters}
+On figures \ref{fig:comparep1} and \ref{fig:comparep2} one can find the optimal parameters for each case. 
+
+For KNN, we observe that the best choice for the $k$ parameter for proxy 1 is between 12 and 15, while for proxy 2 it is between 1 and 6. 
+This is an expected result due to the nature of both series. Indeed, the smoothness of proxy 2 makes the very nearest neighbors the best choice, while for proxy 1, a larger pool of neighbors might be more suitable.
+
+Regarding SVM, we already had observed that the best parameters laid on a diagonal. Therefore, while this results were found optimal, choosing $C$ slightly bigger and $\gamma$ slightly smaller could also do the trick. By observation, we can see that $C$ ranges from $2^{-3}$ to $2^{18}$ and $\gamma$ ranges from $2^{-20}$ to $2^{-4}$. Tough, we can not conclude of any combination of parameters being optimal in all cases. 
+
+\input{p1comp.tex}
+
+\input{p2comp.tex}
+
+
+\subsection{Error measures}
+
+Now that we have all the results for the optimal parameters of the models, it is time to compare the models between them.
+
+The first observation that I should point out is that, looking on figures \ref{fig:compare6m} and \ref{fig:compare10y}, regarding the MASE error measure, the proxy 1 is systematically providing much better results. Regarding MSE and NMSE, we can't make any deductions between the proxies. 
 
 \input{reducedhistorycomp.tex}
 
 \input{longhistorycomp.tex}
 
+Regarding MSE and MASE, SVM shows the best results when using proxy 2, but it is unclear regarding proxy 1. Indeed, the results for the longer history shows slightly better results for KNN. If we take a closer look at the box-plots on figure \ref{fig:table10yMSEp1a} we can see that the median is slightly lower for KNN, but the box is smaller for SVM. Even for NMSE of proxy 1 of the longer history, as one can see on figure \ref{fig:table10yNMSEp1a}, the box for KNN seems lower on all quartiles. We might be inclined to conclude that when using proxy 1, KNN is the better choice. Although on the reduced history KNN does not show the best results, the longer history is a better generalisation of the problem.
 
-Now that we have all the results for the optimal parameters of the models, it's time to compare the models between them. For that, we should look at the results of the longer history, on figure \ref{fig:compare10y}, which is more representative. 
+Regarding NMSE, SVM shows strictly better results in all cases compared to the other algorithms.
 
-With proxy 1, SVM is the best model by far regarding MSE, but it lays slightly behind KNN regarding MASE. 
 
-With proxy 2, regarding MSE, KNN looks like it is performing quite better than SVM ($\sim 16\%$ better) but if we look at the box-plots of those results, we can see that the median of SVM is below 100 with outliers above scores of 2500, so in reality the results are pretty close and might be slightly favourable to SVM. On the other hand, SVM is closely ahead of KNN regarding MASE.
 
-All in all, the SVM and KNN models outperformed the naive model at any point.
+
+
+
 
 
 
@@ -989,6 +1081,11 @@ All in all, the SVM and KNN models outperformed the naive model at any point.
 
 \section{Future work}
 
+New experiments can be conducted in order to strengthen our results. One can search the optimal parameters on a larger pool of financial time series and compare the results with the established ones.
+
+Regarding the tool, new algorithms could be added. The interface could be improved in order to let the user choose a personal file as a data set input.
+
+A research on trading strategies could be interesting. Add new practical functionalities to the tool such as agents simulating trading strategies could be the next step.
 
 
 
@@ -998,9 +1095,13 @@ All in all, the SVM and KNN models outperformed the naive model at any point.
 
 \input{appendix/proxy1MSE6M.tex}
 
+\input{appendix/proxy1NMSE6M.tex}
+
 \input{appendix/proxy1MASE6M.tex}
 
 \input{appendix/proxy2MSE6M.tex}
+
+\input{appendix/proxy2NMSE6M.tex}
 
 \input{appendix/proxy2MASE6M.tex}
 
@@ -1009,9 +1110,13 @@ All in all, the SVM and KNN models outperformed the naive model at any point.
 
 \input{appendix/proxy1MSE10y.tex}
 
+\input{appendix/proxy1NMSE10y.tex}
+
 \input{appendix/proxy1MASE10y.tex}
 
 \input{appendix/proxy2MSE10y.tex}
+
+\input{appendix/proxy2NMSE10y.tex}
 
 \input{appendix/proxy2MASE10y.tex}
 

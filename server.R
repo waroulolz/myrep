@@ -5,10 +5,10 @@ library(plotly)
 library(e1071)
 library("quantmod")
 library(gbcode)
-source("C:/Users/GG/Desktop/Memoire/myrep/KNN.R")
-source("C:/Users/GG/Desktop/Memoire/myrep/SVM.R")
-source("C:/Users/GG/Desktop/Memoire/myrep/config.R")
-source("C:/Users/GG/Desktop/Memoire/myrep/ErrorMeasures.R")
+source("KNN.R")
+source("SVM.R")
+source("config.R")
+source("ErrorMeasures.R")
 
 
 extractDf <- function(data){
@@ -42,7 +42,7 @@ shinyServer(function(input, output, session) {
     data <- extractDf(data)
     data
   }
-  getData <- reactive({invalidateLater(1000 *  60 * 60, session) # Refresh data each hour
+  getData <- reactive({invalidateLater(1000 *  60 * 30, session) # Refresh data each half hour
                       downloadData(markets[[input$market]])})
   
   #Parameters getters

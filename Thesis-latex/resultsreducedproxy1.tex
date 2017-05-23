@@ -1,0 +1,55 @@
+\begin{figure}[!h]
+\centering
+\begin{tabular}{|c|c|c|}
+   \hline
+   & \multicolumn{2}{|c|}{\textbf{MSE}} \\ \cline{2-3}
+   & \textbf{Errors} & \textbf{Parameters}          \\ \hline
+   SVM  & $5.443549e-10$        & $C = 2$, $\gamma = 2^{-13}$          \\ 
+   KNN & $6.492108e-10$ & $K = 15$ \\ 
+   Naive & $6.144618e-10$ &      \\ 
+   \hline
+   \end{tabular}
+\caption{Comparison of MSE errors with the best parameters configurations.}
+\label{fig:table6mMSEp1}
+\centering
+\includegraphics[width=\linewidth]{img/6mproxy1MSE.png}
+\caption{Box plots of the MSE errors with the best parameters for the rolling window cross-validation with proxy 1. On the ordinates, $n$ represents $n := 10^{-9}$.}
+\end{figure}
+
+
+\begin{figure}[!h]
+\centering
+\begin{tabular}{|c|c|c|}
+   \hline
+   & \multicolumn{2}{|c|}{\textbf{NMSE}} \\ \cline{2-3}
+   & \textbf{Errors} & \textbf{Parameters}          \\ \hline
+   SVM  & $5.098590$        & $C = 2^9$, $\gamma = 2^{-19}$          \\ 
+   KNN & $7.424236$ & $K = 15$ \\ 
+   Naive & $7.059421$ &      \\ 
+   \hline
+   \end{tabular}
+\caption{Comparison of NMSE errors with the best parameters configurations.}
+\label{fig:table6mNMSEp1}
+\centering
+\includegraphics[width=\linewidth]{img/6mproxy1NMSE.png}
+\caption{Box plots of the NMSE errors with the best parameters for the rolling window cross-validation with proxy 1.}
+\end{figure}
+
+
+\begin{figure}[!h]
+\centering
+\begin{tabular}{|c|c|c|}
+   \hline
+   & \multicolumn{2}{|c|}{\textbf{MASE}} \\ \cline{2-3}
+   & \textbf{Errors} & \textbf{Parameters}          \\ \hline
+   SVM  & $1.2278$        & $C = 2^8$, $\gamma = 2^{-17}$          \\ 
+   KNN & $1.518099$ & $K = 15$ \\ 
+   Naive & $1.483807$ &      \\ 
+   \hline
+   \end{tabular}
+\caption{Comparison of MASE errors with the best parameters configurations.}
+\label{fig:table6mMASEp1}
+\centering
+\includegraphics[width=\linewidth]{img/6mproxy1MASE.png}
+\caption{Box plots of the MASE errors with the best parameters for the rolling window cross-validation with proxy 1.}
+\end{figure}

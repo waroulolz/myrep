@@ -1,0 +1,55 @@
+\begin{figure}[!h]
+\centering
+\begin{tabular}{|c|c|c|}
+   \hline
+   & \multicolumn{2}{|c|}{\textbf{MSE}} \\ \cline{2-3}
+   & \textbf{Errors} & \textbf{Parameters}          \\ \hline
+   SVM  &  $472.1264$  & $C = 2^{10}$, $\gamma = 2^{-15}$          \\ 
+   KNN & $720.085$  & $K = 6$ \\ 
+   Naive & $2223.865$  &      \\ 
+   \hline
+   \end{tabular}
+\caption{Comparison of MSE errors with the best parameters configurations.}
+\label{fig:table10yMSEp2}
+\centering
+\includegraphics[width=0.95\linewidth, height = 0.67\textheight]{img/10yproxy2MSE.png}
+\caption{Box plots of the MSE errors with the best parameters for the rolling window cross-validation with proxy 2.}
+\end{figure}
+
+
+\begin{figure}[!h]
+\centering
+\begin{tabular}{|c|c|c|}
+   \hline
+   & \multicolumn{2}{|c|}{\textbf{NMSE}} \\ \cline{2-3}
+   & \textbf{Errors} & \textbf{Parameters}          \\ \hline
+   SVM  &  $65.12693$  & $C = 2^{13}$, $\gamma = 2^{-16}$          \\ 
+   KNN & $120.5991$  & $K = 3$ \\ 
+   Naive & $281.0051$ &      \\ 
+   \hline
+   \end{tabular}
+\caption{Comparison of NMSE errors with the best parameters configurations.}
+\label{fig:table10yNMSEp2}
+\centering
+\includegraphics[width=\linewidth]{img/10yproxy2NMSE.png}
+\caption{Box plots of the NMSE errors with the best parameters for the rolling window cross-validation with proxy 2.}
+\end{figure}
+
+
+\begin{figure}[!h]
+\centering
+\begin{tabular}{|c|c|c|}
+   \hline
+   & \multicolumn{2}{|c|}{\textbf{MASE}} \\ \cline{2-3}
+   & \textbf{Errors} & \textbf{Parameters}          \\ \hline
+   SVM  & $6.706905$& $C = 2^{11}$, $\gamma = 2^{-13}$          \\ 
+   KNN & $10.30528$ & $K = 6$ \\ 
+   Naive & $18.31019$ &      \\ 
+   \hline
+   \end{tabular}
+\caption{Comparison of MASE errors with the best parameters configurations.}
+\label{fig:table10yMASEp2}
+\centering
+\includegraphics[width=\linewidth]{img/10yproxy2MASE.png}
+\caption{Box plots of the MASE errors with the best parameters for the rolling window cross-validation with proxy 2.}
+\end{figure}

@@ -1,0 +1,55 @@
+\begin{figure}[!h]
+\centering
+\begin{tabular}{|c|c|c|}
+   \hline
+   & \multicolumn{2}{|c|}{\textbf{MSE}} \\ \cline{2-3}
+   & \textbf{Errors} & \textbf{Parameters}          \\ \hline
+   SVM  & $143.7454$        & $C = 2$, $\gamma = 2^{-4}$          \\ 
+   KNN & $168.642$ & $K = 1$ \\ 
+   Naive & $306.892442$ &      \\ 
+   \hline
+   \end{tabular}
+\caption{Comparison of MSE errors with the best parameters configurations.}
+\label{fig:table6mMSEp2}
+\centering
+\includegraphics[width=\linewidth]{img/6mproxy2MSE.png}
+\caption{Box plots of the MSE errors with the best parameters for the rolling window cross-validation with proxy 2.}
+\end{figure}
+
+
+\begin{figure}[!h]
+\centering
+\begin{tabular}{|c|c|c|}
+   \hline
+   & \multicolumn{2}{|c|}{\textbf{NMSE}} \\ \cline{2-3}
+   & \textbf{Errors} & \textbf{Parameters}          \\ \hline
+   SVM  & $6.807685$        & $C = 2^9$, $\gamma = 2^{-20}$          \\ 
+   KNN & $7.031129$ & $K = 4$ \\ 
+   Naive & $34.60042$ &      \\ 
+   \hline
+   \end{tabular}
+\caption{Comparison of NMSE errors with the best parameters configurations.}
+\label{fig:table6mNMSEp2}
+\centering
+\includegraphics[width=\linewidth]{img/6mproxy2NMSE.png}
+\caption{Box plots of the NMSE errors with the best parameters for the rolling window cross-validation with proxy 2.}
+\end{figure}
+
+
+\begin{figure}[!h]
+\centering
+\begin{tabular}{|c|c|c|}
+   \hline
+   & \multicolumn{2}{|c|}{\textbf{MASE}} \\ \cline{2-3}
+   & \textbf{Errors} & \textbf{Parameters}          \\ \hline
+   SVM  & $2.742375$        & $C = 2^3$, $\gamma = 2^{-6}$          \\ 
+   KNN & $3.0839$ & $K = 4$ \\ 
+   Naive & $6.477913$ &      \\ 
+   \hline
+   \end{tabular}
+\caption{Comparison of MASE errors with the best parameters configurations.}
+\label{fig:table6mMASEp2}
+\centering
+\includegraphics[width=\linewidth]{img/6mproxy2MASE.png}
+\caption{Box plots of the MASE errors with the best parameters for the rolling window cross-validation with proxy 2.}
+\end{figure}

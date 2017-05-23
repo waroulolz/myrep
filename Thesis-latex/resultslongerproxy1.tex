@@ -1,0 +1,55 @@
+\begin{figure}[!h]
+\centering
+\begin{tabular}{|c|c|c|}
+   \hline
+   & \multicolumn{2}{|c|}{\textbf{MSE}} \\ \cline{2-3}
+   & \textbf{Errors} & \textbf{Parameters}          \\ \hline
+   SVM  & $2.965806e-09$  & $C = 2^{-3}$, $\gamma = 2^{-10}$ \\ 
+   KNN & $2.87505e-09$ & $K = 14 $ \\ 
+   Naive & $4.738385e-09$  &      \\ 
+   \hline
+   \end{tabular}
+\caption{Comparison of MSE errors with the best parameters configurations.}
+\label{fig:table10yMSEp1}
+\centering
+\includegraphics[width=\linewidth]{img/10yproxy1MSE.png}
+\caption{Box plots of the MSE errors with the best parameters for the rolling window cross-validation with proxy 1. On the ordinates, $n$ represents $n := 10^{-9}$.}\label{fig:table10yMSEp1a}
+\end{figure}
+
+
+\begin{figure}[!h]
+\centering
+\begin{tabular}{|c|c|c|}
+   \hline
+   & \multicolumn{2}{|c|}{\textbf{NMSE}} \\ \cline{2-3}
+   & \textbf{Errors} & \textbf{Parameters}          \\ \hline
+   SVM  &  $3.969722$      & $C = 2^{18}$, $\gamma = 2^{-11}$          \\ 
+   KNN & $5.32743$  & $K = 12$ \\ 
+   Naive & $15.23972$ &      \\ 
+   \hline
+   \end{tabular}
+\caption{Comparison of NMSE errors with the best parameters configurations.}
+\label{fig:table10yNMSEp1}
+\centering
+\includegraphics[width=\linewidth]{img/10yproxy1NMSE.png}
+\caption{Box plots of the NMSE errors with the best parameters for the rolling window cross-validation with proxy 1.}\label{fig:table10yNMSEp1a}
+\end{figure}
+
+
+\begin{figure}[!h]
+\centering
+\begin{tabular}{|c|c|c|}
+   \hline
+   & \multicolumn{2}{|c|}{\textbf{MASE}} \\ \cline{2-3}
+   & \textbf{Errors} & \textbf{Parameters}          \\ \hline
+   SVM  &  $1.716571$       & $C = 2^{12}$, $\gamma = 2^{-10}$ \\ 
+   KNN & $1.619784$ & $K = 12$ \\ 
+   Naive & $2.808507$ &      \\ 
+   \hline
+   \end{tabular}
+\caption{Comparison of MASE errors with the best parameters configurations.}
+\label{fig:table10yMASEp1}
+\centering
+\includegraphics[width=\linewidth]{img/10yproxy1MASE.png}
+\caption{Box plots of the MASE errors with the best parameters for the rolling window cross-validation with proxy 1.}
+\end{figure}
